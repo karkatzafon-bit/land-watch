@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מפקדת קרקעות — צפון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stone:#E5E2D7;--paper:#F6F4ED;--ink:#1E2922;--ink-soft:#4C574E;
+  --olive:#4A5D38;--olive-b:#6E8A4E;--water:#2E6E7E;--clay:#A8492A;
+  --clay-soft:#F0E2DA;--line:#C7C2B2;--gold:#B7912F;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--stone);color:var(--ink);font-family:"Assistant",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:76px}
+a{color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+header{background:var(--ink);color:var(--paper);padding:14px 0 12px}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:20px}
+.brand small{display:block;font-family:"Space Mono",monospace;font-size:10px;
+  letter-spacing:.16em;color:var(--olive-b);font-weight:400}
+#countdown{text-align:left;font-family:"Space Mono",monospace;font-size:12px;color:#cfd4c4}
+#countdown b{display:block;font-size:22px;color:var(--gold);line-height:1}
+#countdown.danger b{color:#ff8f6b}
+nav{position:fixed;bottom:0;right:0;left:0;background:var(--paper);
+  border-top:1px solid var(--line);display:flex;z-index:50}
+nav button{flex:1;border:0;background:none;padding:9px 2px 8px;font-family:"Assistant";
+  font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer}
+nav button .ico{display:block;font-size:19px;margin-bottom:1px}
+nav button.on{color:var(--olive)}
+main{padding:16px 0 24px}
+.tab{display:none}.tab.on{display:block}
+h2{font-family:"Frank Ruhl Libre",serif;font-size:22px;margin:4px 0 12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+  padding:14px;margin-bottom:12px}
+.muted{color:var(--ink-soft);font-size:13.5px}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:9px;
+  padding:9px 14px;font-family:"Assistant";font-weight:700;font-size:14px;cursor:pointer}
+.btn.p{background:var(--olive);border-color:var(--olive);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12.5px;border-radius:7px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=number],input[type=date],input[type=password],select{
+  width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;
+  padding:10px 12px;font-family:"Assistant";font-size:15px;color:var(--ink)}
+label{font-size:13px;font-weight:700;color:var(--ink-soft);display:block;margin:10px 0 4px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:4px 11px;font-size:13px;font-weight:600;margin:0 0 6px 6px}
+.pill button{border:0;background:none;color:var(--clay);font-weight:900;cursor:pointer;padding:0}
+.tag{font-family:"Space Mono",monospace;font-size:10px;padding:2px 7px;border-radius:5px}
+.tag.yad2{background:#FFE9C7;color:#8a5b00}.tag.madlan{background:#E1ECF3;color:#26566e}
+.tag.rmi{background:#E4EAD4;color:#3d4d22}.tag.facebook{background:#E3E9F8;color:#2a4a8b}
+.tag.web{background:#eee9dd;color:#6a6250}
+.tag.agri{background:var(--clay-soft);color:var(--clay)}
+.urgent-strip{background:var(--clay);color:#fff;font-weight:800;font-size:12.5px;
+  border-radius:8px 8px 0 0;padding:4px 12px;margin:-14px -14px 10px}
+.fcard.urgent{border-color:var(--clay);border-width:2px}
+.fcard h3{margin:0 0 6px;font-size:15.5px;line-height:1.35}
+.fmeta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;margin-bottom:9px}
+.price{font-weight:800;color:var(--olive)}
+.filtered{opacity:.62}
+.empty{text-align:center;padding:26px 10px;color:var(--ink-soft)}
+.statusbtn{border-radius:999px}
+.s-new{background:#fff}.s-called{background:#FFF3D6}.s-visited{background:#E1ECF3}
+.s-lawyer{background:#EADFF2}.s-offer{background:#DCEFD8}
+.badge{font-size:11px;color:var(--ink-soft)}
+.bar{height:7px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.bar i{display:block;height:100%;background:var(--olive)}
+ul.tasks{list-style:none;margin:0;padding:0}
+ul.tasks li{display:flex;gap:9px;align-items:flex-start;padding:8px 4px;border-bottom:1px dashed var(--line);cursor:pointer}
+ul.tasks li:last-child{border-bottom:0}
+ul.tasks li.done span{opacity:.55;text-decoration:line-through}
+ul.tasks input{width:17px;height:17px;accent-color:var(--olive);margin-top:2px;flex:none}
+.toast{position:fixed;bottom:86px;right:50%;transform:translateX(50%);background:var(--ink);
+  color:#fff;padding:9px 18px;border-radius:999px;font-size:13.5px;z-index:99;opacity:0;
+  transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.setup-need{background:#FFF6E4;border:1px solid var(--gold);border-radius:10px;
+  padding:11px 13px;font-size:14px;margin-bottom:14px}
+.linkline a{display:inline-block;margin:0 0 8px 8px;text-decoration:none;border:1px solid var(--line);
+  background:#fff;border-radius:8px;padding:7px 12px;font-size:13.5px;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">מפקדת קרקעות<small>NORTH · LAND OPS</small></div>
+    <div id="countdown"><b>—</b>ימים לדדליין</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="setupNote" class="setup-need" style="display:none">
+    ⚙️ כדי להתחבר לנתונים — פתח את טאב <b>הגדרות</b> והזן ריפו + טוקן (פעם אחת למכשיר).
+  </div>
+
+  <div class="tab on" id="tab-feed">
+    <h2>📡 פיד ממצאים</h2>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn p sm" onclick="loadFeed()">↻ רענן</button>
+      <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px">
+        <input type="checkbox" id="showFiltered" onchange="renderFeed()"> הצג גם מסוננים
+      </label>
+      <span class="muted" id="feedInfo"></span>
+    </div>
+    <div id="feed"><div class="empty">טוען…</div></div>
+  </div>
+
+  <div class="tab" id="tab-crm">
+    <h2>📋 לידים</h2>
+    <div class="card">
+      <label>שטח חדש (שם / מיקום)</label>
+      <input type="text" id="leadTitle" placeholder="מגרש ביסוד המעלה, 1 דונם">
+      <div class="row">
+        <div style="flex:1"><label>מחיר ₪</label><input type="number" id="leadPrice" placeholder="380000"></div>
+        <div style="flex:1"><label>קישור</label><input type="text" id="leadLink" placeholder="https://…"></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn p" onclick="addLead()">+ הוסף ליד</button></div>
+    </div>
+    <div id="crmList"><div class="empty">אין לידים עדיין.</div></div>
+  </div>
+
+  <div class="tab" id="tab-sprint">
+    <h2>🎯 ספרינט 30 יום</h2>
+    <div class="card">
+      <label>תאריך יעד (הדדליין שלך)</label>
+      <div class="row">
+        <div style="flex:1"><input type="date" id="deadline"></div>
+        <button class="btn p" onclick="saveDeadline()">שמור</button>
+      </div>
+    </div>
+    <div id="sprintWeeks"></div>
+  </div>
+
+  <div class="tab" id="tab-profile">
+    <h2>⚙️ פרופיל סינון</h2>
+    <p class="muted">מקור האמת: משפיע על הטלגרם והפיד מהריצה הבאה (עד שעה).</p>
+    <div class="card">
+      <label>אזורים / יישובים</label>
+      <div id="areaPills"></div>
+      <div class="row"><div style="flex:1"><input type="text" id="areaNew" placeholder="הוסף יישוב…"></div>
+        <button class="btn sm" onclick="addPill('areas','areaNew','areaPills')">+ הוסף</button></div>
+      <label>מילות מפתח</label>
+      <div id="kwPills"></div>
+      <div class="row"><div style="flex:1"><input type="text" id="kwNew" placeholder="הוסף מילה…"></div>
+        <button class="btn sm" onclick="addPill('keywords','kwNew','kwPills')">+ הוסף</button></div>
+      <div class="row">
+        <div style="flex:1"><label>🔴 דחוף מתחת ל־(₪)</label><input type="number" id="pUrgent"></div>
+        <div style="flex:1"><label>תקרת מחיר (0=אין)</label><input type="number" id="pMax"></div>
+      </div>
+      <div class="row">
+        <div style="flex:1"><label>גודל מינ׳ (דונם)</label><input type="number" step="0.1" id="pSizeMin"></div>
+        <div style="flex:1"><label>גודל מקס׳ (דונם)</label><input type="number" step="0.1" id="pSizeMax"></div>
+      </div>
+      <label>סוג קרקע</label>
+      <select id="pLand">
+        <option value="all">הכל (חקלאי יסומן ⚠️)</option>
+        <option value="build_only">רק מאושר לבנייה</option>
+      </select>
+      <label>מקורות פעילים</label>
+      <div class="row">
+        <label style="display:flex;gap:6px;margin:0"><input type="checkbox" id="srcYad2"> יד2/מדלן</label>
+        <label style="display:flex;gap:6px;margin:0"><input type="checkbox" id="srcFb"> פייסבוק</label>
+        <label style="display:flex;gap:6px;margin:0"><input type="checkbox" id="srcAlerts"> Alerts</label>
+      </div>
+      <div style="margin-top:14px"><button class="btn p" onclick="saveProfile()">💾 שמור פרופיל לכולם</button></div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-search">
+    <h2>🔍 חיפוש ידני</h2>
+    <div class="card">
+      <p class="muted" style="margin-top:0">קישורי חיפוש לפי האזורים שבפרופיל:</p>
+      <div id="searchLinks" class="linkline"></div>
+    </div>
+    <div class="card">
+      <b>כלים רשמיים</b>
+      <div class="linkline" style="margin-top:8px">
+        <a href="https://apps.land.gov.il/MichrazimSite/" target="_blank" rel="noopener">מכרזי רמ״י</a>
+        <a href="https://www.govmap.gov.il" target="_blank" rel="noopener">GovMap — ייעוד</a>
+        <a href="https://www.nadlan.gov.il" target="_blank" rel="noopener">עסקאות אמת</a>
+        <a href="https://mavat.iplan.gov.il" target="_blank" rel="noopener">תב״ע — מבא״ת</a>
+      </div>
+    </div>
+    <div class="card">
+      <b>⚑ לפני כל התקדמות על שטח</b>
+      <p class="muted" style="margin-bottom:0">ייעוד ב-GovMap · תב״ע תקפה · טאבו/רמ״י · חלקה שלמה או במושע · תקן 22 לחקלאי · עסקאות אמת · עו״ד מקרקעין שלך. דדליין ≠ לדלג על בדיקות.</p>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-setup">
+    <h2>🔧 הגדרות חיבור</h2>
+    <div class="card">
+      <p class="muted" style="margin-top:0">חיבור חד-פעמי למכשיר הזה.</p>
+      <label>בעל הריפו (username)</label><input type="text" id="ghOwner" placeholder="my-user">
+      <label>שם הריפו</label><input type="text" id="ghRepo" placeholder="land-watch">
+      <label>ענף (branch)</label><input type="text" id="ghBranch" value="main">
+      <label>GitHub Token</label><input type="password" id="ghToken" placeholder="github_pat_…">
+      <label>השם שלך (יופיע על עדכוני לידים)</label><input type="text" id="whoAmI" placeholder="דני">
+      <div style="margin-top:12px" class="row">
+        <button class="btn p" onclick="saveSetup()">💾 שמור והתחבר</button>
+        <span id="connState" class="muted"></span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<nav>
+  <button class="on" data-tab="feed" onclick="go('feed')"><span class="ico">📡</span>פיד</button>
+  <button data-tab="crm" onclick="go('crm')"><span class="ico">📋</span>לידים</button>
+  <button data-tab="sprint" onclick="go('sprint')"><span class="ico">🎯</span>ספרינט</button>
+  <button data-tab="profile" onclick="go('profile')"><span class="ico">⚙️</span>פרופיל</button>
+  <button data-tab="search" onclick="go('search')"><span class="ico">🔍</span>חיפוש</button>
+  <button data-tab="setup" onclick="go('setup')"><span class="ico">🔧</span>הגדרות</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MEM = {};
+const store = {
+  get(k){ try{ return localStorage.getItem(k) ?? MEM[k] ?? null; }catch(e){ return MEM[k] ?? null; } },
+  set(k,v){ MEM[k]=v; try{ localStorage.setItem(k,v); }catch(e){} }
+};
+
+const GH = {
+  owner: store.get('gh.owner')||'', repo: store.get('gh.repo')||'',
+  branch: store.get('gh.branch')||'main', token: store.get('gh.token')||'',
+  ok(){ return this.owner && this.repo && this.token; },
+  hdrs(){ return {Authorization:'Bearer '+this.token, Accept:'application/vnd.github+json'}; },
+  async read(path){
+    const r = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}&t=${Date.now()}`,
+      {headers:this.hdrs(), cache:'no-store'});
+    if(!r.ok) throw new Error(path+': '+r.status);
+    const j = await r.json();
+    const text = decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
+    return {data: JSON.parse(text), sha: j.sha};
+  },
+  async write(path, obj, sha, msg){
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 1))));
+    const body = {message: msg||('update '+path), content, branch:this.branch};
+    if(sha) body.sha = sha;
+    let r = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}`,
+      {method:'PUT', headers:this.hdrs(), body: JSON.stringify(body)});
+    if(r.status===409 || r.status===422){
+      const cur = await this.read(path).catch(()=>null);
+      if(cur){ body.sha = cur.sha;
+        r = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}`,
+          {method:'PUT', headers:this.hdrs(), body: JSON.stringify(body)}); }
+    }
+    if(!r.ok) throw new Error('write '+path+': '+r.status);
+    return (await r.json()).content.sha;
+  }
+};
+
+let FEED=[], PROFILE=null, PROFILE_SHA=null, CRM=[], CRM_SHA=null, SPRINT=null, SPRINT_SHA=null;
+const WHO = ()=> store.get('who')||'';
+const STATUSES=[['new','חדש','s-new'],['called','התקשרתי','s-called'],['visited','ביקרתי','s-visited'],['lawyer','אצל עו״ד','s-lawyer'],['offer','הצעה הוגשה','s-offer']];
+
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2400); }
+function go(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+}
+function fmt(n){ return Number(n).toLocaleString('en-US'); }
+
+function tickCountdown(){
+  const el=document.getElementById('countdown');
+  const d = SPRINT && SPRINT.deadline;
+  if(!d){ el.innerHTML='<b>—</b>קבע דדליין בספרינט'; return; }
+  const days = Math.ceil((new Date(d+'T23:59:59') - new Date())/86400000);
+  el.classList.toggle('danger', days<=7);
+  el.innerHTML = days>=0 ? `<b>${days}</b>ימים לדדליין` : `<b>עבר</b>הדדליין חלף`;
+}
+setInterval(tickCountdown, 60000);
+
+async function loadFeed(){
+  if(!GH.ok()){ renderFeed(); return; }
+  try{
+    const r = await GH.read('findings.json');
+    FEED = r.data||[];
+    document.getElementById('feedInfo').textContent =
+      FEED.length ? `עודכן: ${new Date(Math.max(...FEED.map(f=>f.ts||0))*1000).toLocaleString('he-IL')}` : '';
+  }catch(e){ toast('שגיאה בטעינת הפיד: '+e.message); }
+  renderFeed();
+}
+function renderFeed(){
+  const box=document.getElementById('feed');
+  const showF=document.getElementById('showFiltered').checked;
+  let items = FEED.filter(f=> showF || f.passed);
+  items.sort((a,b)=> (b.urgent-a.urgent) || (b.ts-a.ts));
+  if(!GH.ok()){ box.innerHTML='<div class="empty">התחבר בטאב ההגדרות כדי לראות את הפיד.</div>'; return; }
+  if(!items.length){ box.innerHTML='<div class="empty">אין ממצאים עדיין — הסקריפט ימלא את הפיד בריצות הבאות.</div>'; return; }
+  box.innerHTML = items.map(f=>{
+    const tag = `<span class="tag ${f.source}">${({yad2:'יד2',madlan:'מדלן',rmi:'רמ״י',facebook:'פייסבוק',web:'רשת'})[f.source]||f.source}</span>`;
+    const agri = f.land_type==='agri' ? '<span class="tag agri">⚠️ חקלאי/להפשרה</span>' : '';
+    const price = f.price ? `<span class="price">₪${fmt(f.price)}</span>` : '<span class="muted">מחיר לא זוהה</span>';
+    const size = f.size_dunam ? `<span>📐 ${f.size_dunam} דונם</span>` : '';
+    const filt = !f.passed ? `<span class="muted">🚫 סונן: ${f.reason}</span>` : '';
+    return `<div class="card fcard ${f.urgent?'urgent':''} ${!f.passed?'filtered':''}">
+      ${f.urgent?'<div class="urgent-strip">🔴 דחוף — מתחת לסף שלך</div>':''}
+      <h3>${esc(f.title)}</h3>
+      <div class="fmeta">${tag} ${price} ${size} ${agri} ${filt}
+        <span class="badge">${new Date(f.ts*1000).toLocaleDateString('he-IL')}</span></div>
+      <div class="row">
+        ${f.link?`<a class="btn sm" href="${escAttr(f.link)}" target="_blank" rel="noopener">פתח מודעה ↗</a>`:''}
+        <button class="btn sm p" onclick='leadFromFeed(${JSON.stringify(f.id)})'>+ למעקב</button>
+      </div></div>`;
+  }).join('');
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function escAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+async function loadCRM(){
+  if(!GH.ok()) return;
+  try{ const r=await GH.read('crm.json'); CRM=r.data||[]; CRM_SHA=r.sha; }catch(e){}
+  renderCRM();
+}
+async function pushCRM(msg){
+  try{ CRM_SHA = await GH.write('crm.json', CRM, CRM_SHA, msg); toast('נשמר ✓'); }
+  catch(e){ toast('שגיאת שמירה: '+e.message); }
+  renderCRM();
+}
+function leadFromFeed(id){
+  const f=FEED.find(x=>x.id===id); if(!f) return;
+  if(CRM.some(l=>l.link===f.link && f.link)){ toast('כבר במעקב'); return; }
+  CRM.unshift({id:'l'+Date.now(), title:f.title, price:f.price||null, link:f.link||'',
+    status:'new', by:WHO(), at:Date.now()});
+  pushCRM('lead from feed'); go('crm');
+}
+function addLead(){
+  const t=document.getElementById('leadTitle').value.trim(); if(!t){ toast('חסר שם'); return; }
+  const p=Number(document.getElementById('leadPrice').value)||null;
+  const l=document.getElementById('leadLink').value.trim();
+  CRM.unshift({id:'l'+Date.now(), title:t, price:p, link:l, status:'new', by:WHO(), at:Date.now()});
+  document.getElementById('leadTitle').value='';document.getElementById('leadPrice').value='';document.getElementById('leadLink').value='';
+  pushCRM('add lead');
+}
+function cycleLead(id){
+  const l=CRM.find(x=>x.id===id); if(!l) return;
+  const i=STATUSES.findIndex(s=>s[0]===l.status);
+  l.status=STATUSES[(i+1)%STATUSES.length][0]; l.by=WHO(); l.at=Date.now();
+  pushCRM('status '+l.status);
+}
+function delLead(id){ CRM=CRM.filter(x=>x.id!==id); pushCRM('remove lead'); }
+function renderCRM(){
+  const box=document.getElementById('crmList');
+  if(!CRM.length){ box.innerHTML='<div class="empty">אין לידים עדיין.</div>'; return; }
+  box.innerHTML = CRM.map(l=>{
+    const st=STATUSES.find(s=>s[0]===l.status)||STATUSES[0];
+    const urgent = l.price && PROFILE && l.price < (PROFILE.urgent_below||0);
+    return `<div class="card fcard ${urgent?'urgent':''}">
+      ${urgent?'<div class="urgent-strip">🔴 מתחת לסף הדחוף</div>':''}
+      <h3>${esc(l.title)}</h3>
+      <div class="fmeta">${l.price?`<span class="price">₪${fmt(l.price)}</span>`:''}
+        <span class="badge">עודכן: ${new Date(l.at).toLocaleDateString('he-IL')}${l.by?' · '+esc(l.by):''}</span></div>
+      <div class="row">
+        <button class="btn sm statusbtn ${st[2]}" onclick='cycleLead(${JSON.stringify(l.id)})'>${st[1]} ←</button>
+        ${l.link?`<a class="btn sm" href="${escAttr(l.link)}" target="_blank" rel="noopener">פתח ↗</a>`:''}
+        <button class="btn sm" style="color:var(--clay)" onclick='delLead(${JSON.stringify(l.id)})'>מחק</button>
+      </div></div>`;
+  }).join('');
+}
+
+async function loadSprint(){
+  if(!GH.ok()) return;
+  try{ const r=await GH.read('sprint.json'); SPRINT=r.data; SPRINT_SHA=r.sha; }catch(e){}
+  renderSprint(); tickCountdown();
+}
+async function pushSprint(msg){
+  try{ SPRINT_SHA=await GH.write('sprint.json', SPRINT, SPRINT_SHA, msg); toast('נשמר ✓'); }
+  catch(e){ toast('שגיאת שמירה: '+e.message); }
+  renderSprint(); tickCountdown();
+}
+function saveDeadline(){
+  if(!SPRINT) SPRINT={deadline:'',weeks:[]};
+  SPRINT.deadline=document.getElementById('deadline').value;
+  pushSprint('deadline');
+}
+function toggleTask(w,t){
+  SPRINT.weeks[w].tasks[t].done=!SPRINT.weeks[w].tasks[t].done;
+  pushSprint('task');
+}
+function renderSprint(){
+  if(!SPRINT){ document.getElementById('sprintWeeks').innerHTML='<div class="empty">התחבר בהגדרות כדי לטעון.</div>'; return; }
+  document.getElementById('deadline').value=SPRINT.deadline||'';
+  document.getElementById('sprintWeeks').innerHTML=(SPRINT.weeks||[]).map((w,wi)=>{
+    const done=w.tasks.filter(t=>t.done).length, pct=Math.round(done/w.tasks.length*100);
+    return `<div class="card"><b>${esc(w.title)}</b>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <ul class="tasks">${w.tasks.map((t,ti)=>
+        `<li class="${t.done?'done':''}" onclick="toggleTask(${wi},${ti})">
+          <input type="checkbox" ${t.done?'checked':''} onclick="event.stopPropagation();toggleTask(${wi},${ti})">
+          <span>${esc(t.t)}</span></li>`).join('')}</ul></div>`;
+  }).join('');
+}
+
+function pillHTML(list,key,boxId){
+  return list.map((v,i)=>`<span class="pill">${esc(v)}<button onclick="rmPill('${key}',${i},'${boxId}')">×</button></span>`).join('');
+}
+function rmPill(key,i,boxId){ PROFILE[key].splice(i,1);
+  document.getElementById(boxId).innerHTML=pillHTML(PROFILE[key],key,boxId); }
+function addPill(key,inputId,boxId){
+  const el=document.getElementById(inputId); const v=el.value.trim(); if(!v) return;
+  PROFILE[key].push(v); el.value='';
+  document.getElementById(boxId).innerHTML=pillHTML(PROFILE[key],key,boxId);
+}
+async function loadProfile(){
+  if(!GH.ok()) return;
+  try{ const r=await GH.read('profile.json'); PROFILE=r.data; PROFILE_SHA=r.sha; }catch(e){ return; }
+  document.getElementById('areaPills').innerHTML=pillHTML(PROFILE.areas||[],'areas','areaPills');
+  document.getElementById('kwPills').innerHTML=pillHTML(PROFILE.keywords||[],'keywords','kwPills');
+  document.getElementById('pUrgent').value=PROFILE.urgent_below||0;
+  document.getElementById('pMax').value=PROFILE.max_price||0;
+  document.getElementById('pSizeMin').value=PROFILE.size_min_dunam||0;
+  document.getElementById('pSizeMax').value=PROFILE.size_max_dunam||0;
+  document.getElementById('pLand').value=PROFILE.land_type||'all';
+  document.getElementById('srcYad2').checked=(PROFILE.sources||{}).yad2!==false;
+  document.getElementById('srcFb').checked=(PROFILE.sources||{}).facebook!==false;
+  document.getElementById('srcAlerts').checked=(PROFILE.sources||{}).alerts!==false;
+  renderSearchLinks();
+}
+async function saveProfile(){
+  if(!PROFILE){ toast('אין פרופיל טעון'); return; }
+  PROFILE.urgent_below=Number(document.getElementById('pUrgent').value)||0;
+  PROFILE.max_price=Number(document.getElementById('pMax').value)||0;
+  PROFILE.size_min_dunam=Number(document.getElementById('pSizeMin').value)||0;
+  PROFILE.size_max_dunam=Number(document.getElementById('pSizeMax').value)||0;
+  PROFILE.land_type=document.getElementById('pLand').value;
+  PROFILE.sources={yad2:document.getElementById('srcYad2').checked,
+    facebook:document.getElementById('srcFb').checked,
+    alerts:document.getElementById('srcAlerts').checked};
+  try{ PROFILE_SHA=await GH.write('profile.json', PROFILE, PROFILE_SHA, 'profile from site');
+    toast('הפרופיל נשמר — ייכנס לתוקף בריצה הבאה ✓'); renderSearchLinks(); }
+  catch(e){ toast('שגיאת שמירה: '+e.message); }
+}
+
+function renderSearchLinks(){
+  const box=document.getElementById('searchLinks'); if(!PROFILE){ box.innerHTML='<span class="muted">התחבר קודם (הגדרות).</span>'; return; }
+  const g=q=>'https://www.google.com/search?q='+encodeURIComponent(q);
+  box.innerHTML=(PROFILE.areas||[]).slice(0,10).map(a=>
+    `<a href="${g('מגרש למכירה '+a)}" target="_blank" rel="noopener">${esc(a)}</a>`).join('')
+    + `<a href="${g('מכרז מקרקעין מגרשים גליל site:land.gov.il')}" target="_blank" rel="noopener">מכרזי רמ״י</a>`;
+}
+
+function saveSetup(){
+  GH.owner=document.getElementById('ghOwner').value.trim();
+  GH.repo=document.getElementById('ghRepo').value.trim();
+  GH.branch=document.getElementById('ghBranch').value.trim()||'main';
+  GH.token=document.getElementById('ghToken').value.trim();
+  store.set('gh.owner',GH.owner); store.set('gh.repo',GH.repo);
+  store.set('gh.branch',GH.branch); store.set('gh.token',GH.token);
+  store.set('who',document.getElementById('whoAmI').value.trim());
+  boot(true);
+}
+async function boot(fromSave){
+  document.getElementById('ghOwner').value=GH.owner;
+  document.getElementById('ghRepo').value=GH.repo;
+  document.getElementById('ghBranch').value=GH.branch;
+  document.getElementById('ghToken').value=GH.token;
+  document.getElementById('whoAmI').value=WHO();
+  const need=!GH.ok();
+  document.getElementById('setupNote').style.display=need?'block':'none';
+  const cs=document.getElementById('connState');
+  if(need){ cs.textContent='לא מחובר'; renderFeed(); return; }
+  cs.textContent='בודק חיבור…';
+  try{ await GH.read('profile.json'); cs.textContent='מחובר ✓';
+    if(fromSave) toast('מחובר ✓'); }
+  catch(e){ cs.textContent='שגיאה: '+e.message; toast('החיבור נכשל — בדוק טוקן/ריפו'); return; }
+  await Promise.all([loadProfile(), loadCRM(), loadSprint()]);
+  await loadFeed();
+}
+boot();
+</script>
+</body>
+</html>
