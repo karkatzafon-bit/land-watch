@@ -47,7 +47,7 @@ jobs:
         run: |
           git config user.name  "land-watch-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add findings.json seen.json seen_email.json 2>/dev/null || true
+          git add -A
           git commit -m "update findings [skip ci]" || echo "no changes"
           git pull --rebase origin main || true
           git push || echo "nothing to push"
