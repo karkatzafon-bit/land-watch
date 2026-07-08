@@ -167,6 +167,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   <button class="btn sm" id="drawDone" style="display:none" onclick="finishZone()">✔ סיים גזרה</button>
   <button class="btn sm" id="drawCancel" style="display:none;color:var(--clay)" onclick="cancelZone()">✖ בטל</button>
   <button class="btn sm" id="satBtn" onclick="toggleSat()">🛰️ לוויין</button>
+  <button class="btn sm" onclick="goHomeZone()">🎯 לגזרה</button>
+  <button class="btn sm" onclick="openGovmapTenders()">🏛️ מכרזי רמ״י</button>
   <button class="btn sm" id="measBtn" onclick="toggleMeasure()">📏 מדוד שטח</button>
   <button class="btn sm" id="measDone" style="display:none" onclick="endMeasure()">✔ סיים מדידה</button>
   <button class="btn sm" onclick="locateMe()">📍 אני</button>
@@ -453,6 +455,50 @@ function toggleSat(){
   // הכפתור מציג את המצב *הבא* בסבב
   document.getElementById('satBtn').textContent =
     BASE_MODE===0 ? '🛰️ לוויין' : (BASE_MODE===1 ? '🛰️🏷️ משולבת' : '🗺️ מפה');
+}
+
+/* --- 🏛️ מכרזי רמ"י: פתיחת GovMap עם שכבת המכרזים באותו מיקום --- */
+/* המרת WGS84 → רשת ישראל החדשה (ITM, EPSG:2039) — מרקטור רוחבי על GRS80 */
+function wgs84ToITM(lat,lng){
+  const a=6378137.0, f=1/298.257222101, k0=1.0000067;
+  const lat0=31.7343936111111*Math.PI/180, lng0=35.2045169444444*Math.PI/180;
+  const FE=219529.584, FN=626907.39;
+  const e2=f*(2-f), ep2=e2/(1-e2);
+  const φ=lat*Math.PI/180, λ=lng*Math.PI/180;
+  const N=a/Math.sqrt(1-e2*Math.sin(φ)**2);
+  const T=Math.tan(φ)**2, C=ep2*Math.cos(φ)**2, A=(λ-lng0)*Math.cos(φ);
+  function M(p){
+    return a*((1-e2/4-3*e2*e2/64-5*e2**3/256)*p
+      -(3*e2/8+3*e2*e2/32+45*e2**3/1024)*Math.sin(2*p)
+      +(15*e2*e2/256+45*e2**3/1024)*Math.sin(4*p)
+      -(35*e2**3/3072)*Math.sin(6*p));
+  }
+  const E=FE+k0*N*(A+(1-T+C)*A**3/6+(5-18*T+T*T+72*C-58*ep2)*A**5/120);
+  const Nn=FN+k0*(M(φ)-M(lat0)+N*Math.tan(φ)*(A*A/2+(5-T+9*C+4*C*C)*A**4/24
+      +(61-58*T+T*T+600*C-330*ep2)*A**6/720));
+  return [Math.round(E), Math.round(Nn)];
+}
+function openGovmapTenders(){
+  const c = MAP ? MAP.getCenter() : {lat:33.02,lng:35.58};
+  const [x,y]=wgs84ToITM(c.lat,c.lng);
+  // lay=363: מגרשי מכרזים · lay=362: גבולות מכרזים
+  window.open(`https://www.govmap.gov.il/?c=${x},${y}&z=9&lay=363,362`,'_blank','noopener');
+}
+
+/* --- 🎯 חזרה לאזור העניין --- */
+function goHomeZone(){
+  if(!MAP) return;
+  // 1) יש גזרות — מתמקדים עליהן
+  if(ZONES.length){
+    const all=[].concat(...ZONES.map(z=>z.points));
+    MAP.fitBounds(L.latLngBounds(all).pad(0.25));
+    return;
+  }
+  // 2) אין גזרות אבל יש לידים ממופים — מתמקדים עליהם
+  const pts=CRM.map(l=>townCoords(l.town)).filter(Boolean);
+  if(pts.length){ MAP.fitBounds(L.latLngBounds(pts).pad(0.35)); return; }
+  // 3) ברירת מחדל: עמק החולה
+  MAP.setView([33.02,35.58], 11);
 }
 
 /* --- 📍 המיקום שלי --- */
