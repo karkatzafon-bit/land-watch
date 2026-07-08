@@ -32,8 +32,14 @@
   "max_messages_per_run": 25,
 
   "feeds": [
-    "PASTE-GOOGLE-ALERTS-RSS-URL-1",
-    "PASTE-GOOGLE-ALERTS-RSS-URL-2",
-    "PASTE-GOOGLE-ALERTS-RSS-URL-3"
+    "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
+    "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3196392219277136674",
+    "https://www.google.com/alerts/feeds/14392135715118895985/7737247213064390223",
+    "https://www.google.com/alerts/feeds/14392135715118895985/1472786581246698656",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3213448284328784609",
+    "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
+    "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
   ]
 }
