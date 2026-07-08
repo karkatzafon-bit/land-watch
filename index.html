@@ -139,6 +139,9 @@ ul.tasks input{width:18px;height:18px;accent-color:var(--olive);margin-top:2px;f
 .ptype.on{opacity:1;background:var(--sage-soft,#E7F1E8);border-color:var(--olive);color:var(--olive-deep);font-weight:800}
 .zone-label{background:none;border:none;box-shadow:none;font-family:"Assistant";font-weight:800;
   font-size:12px;color:#7A1F17;text-shadow:0 1px 3px rgba(255,255,255,.9)}
+.meas-label{background:rgba(13,71,161,.92);border:none;box-shadow:0 2px 8px rgba(0,0,0,.3);
+  font-family:"Assistant";font-weight:800;font-size:13px;color:#fff;border-radius:8px;
+  padding:4px 10px;text-align:center}
 #sheet th{position:sticky;top:0;background:var(--olive-deep);color:#fff;padding:9px 10px;
   text-align:right;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
 #sheet th:active{background:#2c4025}
@@ -164,6 +167,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   <button class="btn sm" id="drawDone" style="display:none" onclick="finishZone()">✔ סיים גזרה</button>
   <button class="btn sm" id="drawCancel" style="display:none;color:var(--clay)" onclick="cancelZone()">✖ בטל</button>
   <button class="btn sm" id="satBtn" onclick="toggleSat()">🛰️ לוויין</button>
+  <button class="btn sm" id="measBtn" onclick="toggleMeasure()">📏 מדוד שטח</button>
+  <button class="btn sm" id="measDone" style="display:none" onclick="endMeasure()">✔ סיים מדידה</button>
   <button class="btn sm" onclick="locateMe()">📍 אני</button>
 </div>
 
@@ -434,16 +439,20 @@ function townCoords(name){
 }
 const STATUS_COLOR={new:'#F6F4ED',called:'#E8B93E',visited:'#2E6E7E',lawyer:'#7E5FA4',offer:'#4A5D38'};
 let MAP=null, MAP_LAYER=null, ZONE_LAYER=null;
-let BASE_OSM=null, BASE_SAT=null, SAT_ON=false, MY_MARK=null, FIT_DONE=false;
+let BASE_OSM=null, BASE_SAT=null, BASE_LBL=null, BASE_MODE=0, MY_MARK=null, FIT_DONE=false;
 let ZONES=[], ZONES_SHA=null;
 
-/* --- 🛰️ לוויין / מפה --- */
+/* --- 🛰️ מצבי מפה: דרכים → לוויין → משולבת (תצלום+שמות) --- */
 function toggleSat(){
   if(!MAP) return;
-  SAT_ON=!SAT_ON;
-  if(SAT_ON){ MAP.removeLayer(BASE_OSM); BASE_SAT.addTo(MAP); }
-  else{ MAP.removeLayer(BASE_SAT); BASE_OSM.addTo(MAP); }
-  document.getElementById('satBtn').textContent = SAT_ON ? '🗺️ מפה' : '🛰️ לוויין';
+  BASE_MODE=(BASE_MODE+1)%3;
+  [BASE_OSM,BASE_SAT,BASE_LBL].forEach(l=>{ if(l && MAP.hasLayer(l)) MAP.removeLayer(l); });
+  if(BASE_MODE===0){ BASE_OSM.addTo(MAP); }
+  else if(BASE_MODE===1){ BASE_SAT.addTo(MAP); }
+  else { BASE_SAT.addTo(MAP); BASE_LBL.addTo(MAP); }
+  // הכפתור מציג את המצב *הבא* בסבב
+  document.getElementById('satBtn').textContent =
+    BASE_MODE===0 ? '🛰️ לוויין' : (BASE_MODE===1 ? '🛰️🏷️ משולבת' : '🗺️ מפה');
 }
 
 /* --- 📍 המיקום שלי --- */
@@ -469,7 +478,7 @@ function nearestTown(latlng){
   return bestD<0.09 ? best : '';   // עד ~9 ק"מ
 }
 function longPressAdd(e){
-  if(DRAWING) return;
+  if(DRAWING || MEASURING) return;
   const town=nearestTown(e.latlng);
   document.getElementById('leadTown').value=town;
   go('crm');
@@ -478,6 +487,47 @@ function longPressAdd(e){
 }
 
 let DRAWING=false, DRAFT=[], DRAFT_LAYER=null;
+let MEASURING=false, MPTS=[], M_LAYER=null;
+
+/* --- 📏 מדידת שטח --- */
+function toggleMeasure(){
+  if(MEASURING){ endMeasure(); return; }
+  if(DRAWING) cancelZone();          // לא מודדים ומסמנים גזרה בו-זמנית
+  MEASURING=true; MPTS=[];
+  M_LAYER=L.layerGroup().addTo(MAP);
+  document.getElementById('measBtn').textContent='👆 הקש נקודות למדידה…';
+  document.getElementById('measDone').style.display='';
+  toast('הקש על פינות השטח — הדונם מתעדכן חי');
+}
+function measureClick(latlng){
+  MPTS.push([latlng.lat, latlng.lng]);
+  M_LAYER.clearLayers();
+  MPTS.forEach(p=>L.circleMarker(p,{radius:5,color:'#0D47A1',fillColor:'#fff',fillOpacity:1,weight:2}).addTo(M_LAYER));
+  if(MPTS.length>1)
+    L.polyline(MPTS,{color:'#0D47A1',weight:3,dashArray:'2 6'}).addTo(M_LAYER);
+  if(MPTS.length>2){
+    const poly=L.polygon(MPTS,{color:'#0D47A1',weight:2,fillColor:'#4C86E8',fillOpacity:.18}).addTo(M_LAYER);
+    const d=geoAreaDunam(MPTS);
+    poly.bindTooltip(`📏 ${d>=10?d.toFixed(1):d.toFixed(2)} דונם<br>(${Math.round(d*1000).toLocaleString()} מ״ר)`,
+      {permanent:true, direction:'center', className:'meas-label'}).openTooltip();
+  }
+}
+function endMeasure(){
+  MEASURING=false; MPTS=[];
+  if(M_LAYER){ MAP.removeLayer(M_LAYER); M_LAYER=null; }
+  document.getElementById('measBtn').textContent='📏 מדוד שטח';
+  document.getElementById('measDone').style.display='none';
+}
+/* שטח גיאודזי (נוסחת שטח כדורית) — מדויק למגרשים ולחלקות */
+function geoAreaDunam(pts){
+  const R=6378137, rad=Math.PI/180;
+  let area=0;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const [lat1,lng1]=pts[j],[lat2,lng2]=pts[i];
+    area += (lng2-lng1)*rad * (2 + Math.sin(lat1*rad) + Math.sin(lat2*rad));
+  }
+  return Math.abs(area*R*R/2)/1000;   // מ״ר → דונם
+}
 const ZONE_COLORS=['#B3261E','#B26A00','#1B5E20','#0D47A1','#6A1B9A'];
 
 /* --- גזרות: שמירה/טעינה (zones.json בריפו) --- */
@@ -502,6 +552,7 @@ function toggleDraw(){
   toast('הקש על המפה כדי לסמן את קודקודי הגזרה');
 }
 function drawClick(e){
+  if(MEASURING){ measureClick(e.latlng); return; }
   if(!DRAWING) return;
   DRAFT.push([e.latlng.lat, e.latlng.lng]);
   DRAFT_LAYER.clearLayers();
@@ -609,6 +660,8 @@ function renderMap(){
       {attribution:'© OpenStreetMap', maxZoom:19});
     BASE_SAT = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {attribution:'© Esri, Maxar, Earthstar Geographics', maxZoom:19});
+    BASE_LBL = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      {attribution:'© Esri', maxZoom:19, pane:'overlayPane'});
     BASE_OSM.addTo(MAP);
     ZONE_LAYER = L.layerGroup().addTo(MAP);
     MAP_LAYER = L.layerGroup().addTo(MAP);
