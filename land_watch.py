@@ -41,7 +41,9 @@ def main():
         return
 
     seen_list, seen_set = C.load_seen(SEEN_PATH)
-    first_run = len(seen_set) == 0
+    
+    # ביטלנו את חסימת הריצה הראשונה כדי שכל המידע הקיים יישפך להיסטוריה באתר!
+    first_run = False 
 
     entries = []
     for url in C.FEEDS:
@@ -49,19 +51,6 @@ def main():
             entries.extend(feedparser.parse(url).entries)
         except Exception as e:
             print(f"[warn] feed failed: {url} :: {e}", file=sys.stderr)
-
-    if first_run:
-        for e in entries:
-            iid = item_id(e)
-            if iid not in seen_set:
-                seen_set.add(iid); seen_list.append(iid)
-        C.save_seen(SEEN_PATH, seen_list)
-        try:
-            C.notify("✅ ניטור הרשת הופעל. מעכשיו — רק ממצאים חדשים.")
-        except Exception as e:
-            print(f"[warn] init notify: {e}", file=sys.stderr)
-        print(f"first run: seeded {len(seen_set)}.")
-        return
 
     findings = []
     for e in entries:
@@ -84,6 +73,8 @@ def main():
                                        passed, reason))
 
     C.add_findings(findings)
+    
+    # נשלח לטלגרם רק אם יש משהו חדש באמת, אבל נשמור הכל לקובץ
     sent = C.send_findings(findings)
     C.save_seen(SEEN_PATH, seen_list)
     print(f"done. new={len(findings)} sent={sent} seen={len(seen_set)}")
