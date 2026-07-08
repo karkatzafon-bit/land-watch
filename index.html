@@ -124,6 +124,16 @@ ul.tasks input{width:18px;height:18px;accent-color:var(--olive);margin-top:2px;f
 .linkline a{display:inline-block;margin:0 0 8px 8px;text-decoration:none;border:1px solid var(--line);
   background:#fff;border-radius:8px;padding:7px 12px;font-size:13.5px;font-weight:600}
 .linkline a:after{content:" ↗";font-size:10px;opacity:.6}
+.ptype{opacity:.55}
+.ptype.on{opacity:1;background:var(--sage-soft,#E7F1E8);border-color:var(--olive);color:var(--olive-deep);font-weight:800}
+.zone-label{background:none;border:none;box-shadow:none;font-family:"Assistant";font-weight:800;
+  font-size:12px;color:#7A1F17;text-shadow:0 1px 3px rgba(255,255,255,.9)}
+#sheet th{position:sticky;top:0;background:var(--olive-deep);color:#fff;padding:9px 10px;
+  text-align:right;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
+#sheet th:active{background:#2c4025}
+#sheet td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+#sheet tr.urgent-row td{background:#FBEBE5}
+#sheet tbody tr:active{background:#F0EDE2}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:8px}
 </style>
@@ -144,7 +154,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   </div>
 
   <!-- FEED -->
-  <div class="tab on" id="tab-feed">
+  <div class="tab" id="tab-feed">
     <h2>📡 פיד ממצאים</h2>
     <div class="row" style="margin-bottom:12px">
       <button class="btn p sm" onclick="loadFeed()">↻ רענן</button>
@@ -162,14 +172,38 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
     <div class="card">
       <label>שטח חדש (שם / תיאור)</label>
       <input type="text" id="leadTitle" placeholder="מגרש 1 דונם, פינתי">
+      <label>סוג נכס</label>
+      <div class="row" id="ptypeRow">
+        <button type="button" class="btn sm ptype on" data-pt="plot" onclick="setPtype('plot')">🏞️ מגרש</button>
+        <button type="button" class="btn sm ptype" data-pt="house" onclick="setPtype('house')">🏠 בית</button>
+      </div>
       <label>יישוב (למפה 🗺️)</label>
       <input type="text" id="leadTown" placeholder="יסוד המעלה" list="townList">
       <datalist id="townList"></datalist>
       <div class="row">
         <div style="flex:1"><label>מחיר ₪</label><input type="number" id="leadPrice" placeholder="380000"></div>
+        <div style="flex:1"><label>שטח מגרש (דונם)</label><input type="number" step="0.1" id="leadDunam" placeholder="1.0"></div>
+      </div>
+      <div id="houseFields" style="display:none">
+        <div class="row">
+          <div style="flex:1"><label>מ״ר בנוי</label><input type="number" id="leadSqm" placeholder="120"></div>
+          <div style="flex:1"><label>חדרים</label><input type="number" step="0.5" id="leadRooms" placeholder="4"></div>
+        </div>
+        <label>מצב הנכס</label>
+        <select id="leadCond">
+          <option value="">— בחר —</option>
+          <option value="חדש">חדש</option>
+          <option value="שמור">שמור</option>
+          <option value="דרוש שיפוץ">דרוש שיפוץ</option>
+        </select>
+      </div>
+      <div class="row">
+        <div style="flex:1"><label>📞 טלפון איש קשר</label><input type="text" id="leadPhone" placeholder="050-0000000"></div>
         <div style="flex:1"><label>קישור</label><input type="text" id="leadLink" placeholder="https://…"></div>
       </div>
-      <div style="margin-top:10px"><button class="btn p" onclick="addLead()">+ הוסף ליד</button></div>
+      <label>הערות</label>
+      <input type="text" id="leadNote" placeholder="גמיש במחיר / לבדוק תב״ע…">
+      <div style="margin-top:12px"><button class="btn p" onclick="addLead()">+ הוסף ליד</button></div>
     </div>
     <div id="crmList"><div class="empty">אין לידים עדיין — הוסף מהפיד או ידנית.</div></div>
   </div>
@@ -264,20 +298,40 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
     </div>
   </div>
 
-  <div class="tab" id="tab-map">
-    <h2>🗺️ מפת לידים</h2>
-    <p class="muted" style="margin-top:-6px">כל ליד עם יישוב מופיע כסיכה, צבועה לפי סטטוס. לחיצה על סיכה — פרטים.</p>
+  <div class="tab on" id="tab-map">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">🗺️ מפת גזרה</h2>
+      <span class="muted" id="zoneStats"></span>
+    </div>
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn sm p" id="drawBtn" onclick="toggleDraw()">✏️ סמן גזרה</button>
+      <button class="btn sm" id="drawDone" style="display:none" onclick="finishZone()">✔ סיים גזרה</button>
+      <button class="btn sm" id="drawCancel" style="display:none;color:var(--clay)" onclick="cancelZone()">✖ בטל</button>
+    </div>
+    <div id="zoneChips" class="row" style="margin-bottom:8px"></div>
     <div id="mapLegend" class="row" style="margin-bottom:8px;font-size:12px"></div>
-    <div id="leadMap" style="height:62vh;border:1px solid var(--line);border-radius:12px;overflow:hidden"></div>
+    <div id="leadMap" style="height:64vh;border:2px solid var(--olive-deep);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)"></div>
     <p class="muted" id="mapMissing" style="margin-top:8px"></p>
+  </div>
+
+  <!-- SHEET: כל הלידים בטבלה -->
+  <div class="tab" id="tab-sheet">
+    <h2>📊 גיליון לידים</h2>
+    <p class="muted" style="margin-top:-6px">מבט-על מרוכז. לחיצה על כותרת עמודה — מיון.</p>
+    <div style="overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff">
+      <table id="sheet" style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px">
+        <thead></thead><tbody></tbody>
+      </table>
+    </div>
   </div>
 
 </main>
 
 <nav>
-  <button class="on" data-tab="feed" onclick="go('feed')"><span class="ico">📡</span>פיד</button>
+  <button class="on" data-tab="map" onclick="go('map')"><span class="ico">🗺️</span>מפה</button>
+  <button data-tab="sheet" onclick="go('sheet')"><span class="ico">📊</span>גיליון</button>
   <button data-tab="crm" onclick="go('crm')"><span class="ico">📋</span>לידים</button>
-  <button data-tab="map" onclick="go('map')"><span class="ico">🗺️</span>מפה</button>
+  <button data-tab="feed" onclick="go('feed')"><span class="ico">📡</span>פיד</button>
   <button data-tab="sprint" onclick="go('sprint')"><span class="ico">🎯</span>ספרינט</button>
   <button data-tab="profile" onclick="go('profile')"><span class="ico">⚙️</span>פרופיל</button>
   <button data-tab="search" onclick="go('search')"><span class="ico">🔍</span>חיפוש</button>
@@ -365,7 +419,69 @@ function townCoords(name){
   return null;
 }
 const STATUS_COLOR={new:'#F6F4ED',called:'#E8B93E',visited:'#2E6E7E',lawyer:'#7E5FA4',offer:'#4A5D38'};
-let MAP=null, MAP_LAYER=null;
+let MAP=null, MAP_LAYER=null, ZONE_LAYER=null;
+let ZONES=[], ZONES_SHA=null;
+let DRAWING=false, DRAFT=[], DRAFT_LAYER=null;
+const ZONE_COLORS=['#B3261E','#B26A00','#1B5E20','#0D47A1','#6A1B9A'];
+
+/* --- גזרות: שמירה/טעינה (zones.json בריפו) --- */
+async function loadZones(){
+  if(!GH.ok()) return;
+  try{ const r=await GH.read('zones.json'); ZONES=r.data||[]; ZONES_SHA=r.sha; }
+  catch(e){ ZONES=[]; ZONES_SHA=null; }  // הקובץ עוד לא קיים — ייווצר בשמירה הראשונה
+}
+async function pushZones(msg){
+  try{ ZONES_SHA=await GH.write('zones.json', ZONES, ZONES_SHA, msg); toast('הגזרה נשמרה ✓'); }
+  catch(e){ toast('שגיאת שמירת גזרה: '+e.message); }
+}
+
+/* --- ציור גזרה בהקשות --- */
+function toggleDraw(){
+  if(DRAWING){ cancelZone(); return; }
+  DRAWING=true; DRAFT=[];
+  DRAFT_LAYER=L.layerGroup().addTo(MAP);
+  document.getElementById('drawBtn').textContent='👆 הקש נקודות על המפה…';
+  document.getElementById('drawDone').style.display='';
+  document.getElementById('drawCancel').style.display='';
+  toast('הקש על המפה כדי לסמן את קודקודי הגזרה');
+}
+function drawClick(e){
+  if(!DRAWING) return;
+  DRAFT.push([e.latlng.lat, e.latlng.lng]);
+  DRAFT_LAYER.clearLayers();
+  DRAFT.forEach(p=>L.circleMarker(p,{radius:5,color:'#B3261E',fillColor:'#fff',fillOpacity:1,weight:2}).addTo(DRAFT_LAYER));
+  if(DRAFT.length>1)
+    L.polyline(DRAFT,{color:'#B3261E',weight:3,dashArray:'8 6'}).addTo(DRAFT_LAYER);
+}
+function finishZone(){
+  if(DRAFT.length<3){ toast('צריך לפחות 3 נקודות לגזרה'); return; }
+  const name=prompt('שם הגזרה (למשל: עמק החולה צפון)')||('גזרה '+(ZONES.length+1));
+  ZONES.push({name:name, color:ZONE_COLORS[ZONES.length%ZONE_COLORS.length], points:DRAFT});
+  endDraw(); pushZones('add zone'); renderMap();
+}
+function cancelZone(){ endDraw(); }
+function endDraw(){
+  DRAWING=false; DRAFT=[];
+  if(DRAFT_LAYER){ MAP.removeLayer(DRAFT_LAYER); DRAFT_LAYER=null; }
+  document.getElementById('drawBtn').textContent='✏️ סמן גזרה';
+  document.getElementById('drawDone').style.display='none';
+  document.getElementById('drawCancel').style.display='none';
+}
+function delZone(i){
+  if(!confirm('למחוק את הגזרה "'+ZONES[i].name+'"?')) return;
+  ZONES.splice(i,1); pushZones('remove zone'); renderMap();
+}
+
+/* --- נקודה בתוך פוליגון (ray casting) --- */
+function inPoly(pt, poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const yi=poly[i][0],xi=poly[i][1],yj=poly[j][0],xj=poly[j][1];
+    if(((xi>pt[1])!==(xj>pt[1])) && (pt[0] < (yj-yi)*(pt[1]-xi)/(xj-xi)+yi)) inside=!inside;
+  }
+  return inside;
+}
+function inAnyZone(pt){ return ZONES.some(z=>inPoly(pt,z.points)); }
 
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2400); }
@@ -374,6 +490,53 @@ function go(t){
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='map') renderMap();
+  if(t==='sheet') renderSheet();
+}
+
+/* ---------- 📊 גיליון ---------- */
+let SHEET_SORT={key:'urgent',dir:-1};
+const SHEET_COLS=[
+  ['type','סוג'],['title','שם'],['town','יישוב'],['price','מחיר ₪'],
+  ['dunam','דונם'],['sqm','מ״ר'],['status','סטטוס'],['phone','טלפון'],['by','עודכן ע״י']
+];
+function sheetVal(l,k){
+  if(k==='type') return l.ptype==='house'?'🏠 בית':'🏞️ מגרש';
+  if(k==='status') return (STATUSES.find(s=>s[0]===l.status)||STATUSES[0])[1];
+  if(k==='urgent') return (l.price && PROFILE && l.price<(PROFILE.urgent_below||0))?1:0;
+  return l[k] ?? '';
+}
+function setSort(k){
+  SHEET_SORT = SHEET_SORT.key===k ? {key:k,dir:-SHEET_SORT.dir} : {key:k,dir:1};
+  renderSheet();
+}
+function renderSheet(){
+  const thead=document.querySelector('#sheet thead');
+  const tbody=document.querySelector('#sheet tbody');
+  thead.innerHTML='<tr>'+SHEET_COLS.map(([k,lbl])=>
+    `<th onclick="setSort('${k}')">${lbl}${SHEET_SORT.key===k?(SHEET_SORT.dir>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
+  if(!CRM.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:26px">אין לידים עדיין 🌱</td></tr>'; return; }
+  const rows=[...CRM].sort((a,b)=>{
+    // דחופים תמיד למעלה, ואז לפי העמודה שנבחרה
+    const u=sheetVal(b,'urgent')-sheetVal(a,'urgent'); if(u) return u;
+    const va=sheetVal(a,SHEET_SORT.key), vb=sheetVal(b,SHEET_SORT.key);
+    if(typeof va==='number'||typeof vb==='number') return SHEET_SORT.dir*((va||0)-(vb||0));
+    return SHEET_SORT.dir*String(va).localeCompare(String(vb),'he');
+  });
+  tbody.innerHTML=rows.map(l=>{
+    const urgent=sheetVal(l,'urgent');
+    const tel=(l.phone||'').replace(/[^\d+]/g,'');
+    return `<tr class="${urgent?'urgent-row':''}">
+      <td>${sheetVal(l,'type')}</td>
+      <td>${l.link?`<a href="${escAttr(l.link)}" target="_blank" rel="noopener"><b>${esc(l.title)}</b></a>`:`<b>${esc(l.title)}</b>`}${urgent?' 🔴':''}</td>
+      <td>${esc(l.town||'—')}</td>
+      <td>${l.price?fmt(l.price):'—'}</td>
+      <td>${l.dunam||'—'}</td>
+      <td>${l.sqm||'—'}</td>
+      <td>${sheetVal(l,'status')}</td>
+      <td>${tel?`<a href="tel:${tel}">📞 ${esc(l.phone)}</a>`:'—'}</td>
+      <td>${esc(l.by||'—')}</td>
+    </tr>`;
+  }).join('');
 }
 
 /* ---------- מפה ---------- */
@@ -383,36 +546,75 @@ function renderMap(){
     MAP = L.map('leadMap').setView([33.02,35.58], 10);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       {attribution:'© OpenStreetMap', maxZoom:17}).addTo(MAP);
+    ZONE_LAYER = L.layerGroup().addTo(MAP);
     MAP_LAYER = L.layerGroup().addTo(MAP);
+    MAP.on('click', drawClick);
   }
   setTimeout(()=>MAP.invalidateSize(), 150);
+
+  /* --- שכבת גזרות: גבול גזרה מקווקו + מילוי שקוף --- */
+  ZONE_LAYER.clearLayers();
+  ZONES.forEach((z,i)=>{
+    L.polygon(z.points, {color:z.color, weight:3, dashArray:'10 6',
+      fillColor:z.color, fillOpacity:.08}).addTo(ZONE_LAYER)
+     .bindTooltip(z.name, {permanent:true, direction:'center',
+       className:'zone-label', opacity:.85});
+  });
+  document.getElementById('zoneChips').innerHTML = ZONES.map((z,i)=>
+    `<span class="pill" style="border-color:${z.color};color:${z.color};font-weight:800">
+      ⬠ ${esc(z.name)}<button onclick="delZone(${i})">×</button></span>`).join('');
+
   MAP_LAYER.clearLayers();
-  const pts=[];
+  const pts=[]; const townCount={}; let inZoneCount=0;
   CRM.forEach(l=>{
-    const c = townCoords(l.town);
-    if(!c){ if(l.town) missing.push(l.town); return; }
+    const base = townCoords(l.town);
+    if(!base){ if(l.town) missing.push(l.town); return; }
+    // פיזור קטן כשיש כמה לידים באותו יישוב — שלא יסתירו זה את זה
+    const n = townCount[l.town]=(townCount[l.town]||0)+1;
+    const c = n===1 ? base : [base[0]+0.004*Math.cos(n*2.4), base[1]+0.005*Math.sin(n*2.4)];
     const urgent = l.price && PROFILE && l.price < (PROFILE.urgent_below||0);
+    const inZone = ZONES.length && inAnyZone(c);
+    if(inZone) inZoneCount++;
     const st = STATUSES.find(s=>s[0]===l.status)||STATUSES[0];
-    const m = L.circleMarker(c, {
-      radius: 11, weight: urgent?4:2,
-      color: urgent ? '#A8492A' : '#1E2922',
-      fillColor: STATUS_COLOR[l.status]||'#F6F4ED', fillOpacity: .95
-    });
-    m.bindPopup(`<div dir="rtl" style="font-family:Assistant,sans-serif;min-width:170px">
-      <b>${esc(l.title)}</b><br>
+    const fill = STATUS_COLOR[l.status]||'#F6F4ED';
+    const ring = urgent ? '#A8492A' : (inZone ? '#B3261E' : '#1E2922');
+    let m;
+    if(l.ptype==='house'){
+      m = L.marker(c, {icon: L.divIcon({className:'',
+        html:`<div style="width:18px;height:18px;background:${fill};border:${urgent?3:2}px solid ${ring};border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+        iconSize:[18,18], iconAnchor:[9,9]})});
+    } else {
+      m = L.circleMarker(c, {radius: 11, weight: urgent?4:(inZone?3:2),
+        color: ring, fillColor: fill, fillOpacity: .95});
+    }
+    const tel=(l.phone||'').replace(/[^\d+]/g,'');
+    const house = l.ptype==='house'
+      ? `${l.sqm?('📐 '+l.sqm+' מ״ר · '):''}${l.rooms?(l.rooms+' חד׳ · '):''}${l.cond?esc(l.cond):''}`.replace(/ · $/,'')
+      : '';
+    m.bindPopup(`<div dir="rtl" style="font-family:Assistant,sans-serif;min-width:180px">
+      <b>${l.ptype==='house'?'🏠':'🏞️'} ${esc(l.title)}</b><br>
       ${l.town?('📍 '+esc(l.town)+'<br>'):''}
       ${l.price?('💰 ₪'+fmt(l.price)+'<br>'):''}
+      ${house?(house+'<br>'):''}
+      ${l.dunam?('🏞️ '+l.dunam+' דונם<br>'):''}
       סטטוס: <b>${st[1]}</b>${urgent?' · <span style="color:#A8492A">🔴 דחוף</span>':''}<br>
+      ${tel?('<a href="tel:'+tel+'">📞 חיוג</a> · '):''}
       ${l.link?('<a href="'+escAttr(l.link)+'" target="_blank" rel="noopener">פתח מודעה ↗</a>'):''}
     </div>`);
     m.addTo(MAP_LAYER); pts.push(c);
   });
-  if(pts.length) MAP.fitBounds(L.latLngBounds(pts).pad(0.35));
+  if(pts.length && !DRAWING) MAP.fitBounds(L.latLngBounds(pts).pad(0.35));
+  document.getElementById('zoneStats').textContent =
+    ZONES.length ? `⬠ ${ZONES.length} גזרות · ${inZoneCount}/${pts.length} לידים בגזרה` : '';
   document.getElementById('mapLegend').innerHTML =
     STATUSES.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px">
       <span style="width:12px;height:12px;border-radius:50%;border:2px solid #1E2922;background:${STATUS_COLOR[s[0]]}"></span>${s[1]}</span>`).join('')
     + `<span style="display:inline-flex;align-items:center;gap:4px">
-      <span style="width:12px;height:12px;border-radius:50%;border:3px solid #A8492A;background:#fff"></span>🔴 דחוף</span>`;
+      <span style="width:12px;height:12px;border-radius:50%;border:3px solid #A8492A;background:#fff"></span>🔴 דחוף</span>`
+    + `<span style="display:inline-flex;align-items:center;gap:4px">
+      <span style="width:12px;height:12px;border:2px solid #1E2922;border-radius:3px;background:#fff"></span>🏠 בית</span>
+    <span style="display:inline-flex;align-items:center;gap:4px">
+      <span style="width:12px;height:12px;border:2px solid #1E2922;border-radius:50%;background:#fff"></span>🏞️ מגרש</span>`;
   document.getElementById('mapMissing').textContent =
     missing.length ? `⚠️ יישובים שלא זוהו במפה: ${[...new Set(missing)].join(', ')} — בדוק איות או עדכן אותי להוסיף אותם.` :
     (pts.length ? '' : 'אין עדיין לידים עם יישוב — הוסף יישוב ללידים בטאב 📋.');
@@ -483,6 +685,7 @@ async function pushCRM(msg){
   try{ CRM_SHA = await GH.write('crm.json', CRM, CRM_SHA, msg); toast('נשמר ✓'); }
   catch(e){ toast('שגיאת שמירה: '+e.message); }
   renderCRM();
+  if(MAP) renderMap();
 }
 function leadFromFeed(id){
   const f=FEED.find(x=>x.id===id); if(!f) return;
@@ -493,13 +696,30 @@ function leadFromFeed(id){
     status:'new', by:WHO(), at:Date.now()});
   pushCRM('lead from feed'); go('crm');
 }
+let PTYPE='plot';
+function setPtype(t){
+  PTYPE=t;
+  document.querySelectorAll('.ptype').forEach(b=>b.classList.toggle('on',b.dataset.pt===t));
+  document.getElementById('houseFields').style.display = t==='house' ? 'block' : 'none';
+}
 function addLead(){
   const t=document.getElementById('leadTitle').value.trim(); if(!t){ toast('חסר שם'); return; }
   const town=document.getElementById('leadTown').value.trim();
   const p=Number(document.getElementById('leadPrice').value)||null;
   const l=document.getElementById('leadLink').value.trim();
-  CRM.unshift({id:'l'+Date.now(), title:t, town:town, price:p, link:l, status:'new', by:WHO(), at:Date.now()});
-  document.getElementById('leadTitle').value='';document.getElementById('leadTown').value='';document.getElementById('leadPrice').value='';document.getElementById('leadLink').value='';
+  const lead={id:'l'+Date.now(), title:t, ptype:PTYPE, town:town, price:p, link:l,
+    dunam:Number(document.getElementById('leadDunam').value)||null,
+    phone:document.getElementById('leadPhone').value.trim(),
+    note:document.getElementById('leadNote').value.trim(),
+    status:'new', by:WHO(), at:Date.now()};
+  if(PTYPE==='house'){
+    lead.sqm=Number(document.getElementById('leadSqm').value)||null;
+    lead.rooms=Number(document.getElementById('leadRooms').value)||null;
+    lead.cond=document.getElementById('leadCond').value;
+  }
+  CRM.unshift(lead);
+  ['leadTitle','leadTown','leadPrice','leadLink','leadDunam','leadPhone','leadNote','leadSqm','leadRooms'].forEach(i=>{const e=document.getElementById(i); if(e) e.value='';});
+  document.getElementById('leadCond').value='';
   pushCRM('add lead');
 }
 function cycleLead(id){
@@ -515,13 +735,21 @@ function renderCRM(){
   box.innerHTML = CRM.map(l=>{
     const st=STATUSES.find(s=>s[0]===l.status)||STATUSES[0];
     const urgent = l.price && PROFILE && l.price < (PROFILE.urgent_below||0);
+    const pt = l.ptype==='house' ? '🏠 בית' : '🏞️ מגרש';
+    const house = l.ptype==='house'
+      ? `${l.sqm?`<span>📐 ${l.sqm} מ״ר בנוי</span>`:''}${l.rooms?`<span>🚪 ${l.rooms} חד׳</span>`:''}${l.cond?`<span>🔨 ${esc(l.cond)}</span>`:''}`
+      : '';
+    const tel=(l.phone||'').replace(/[^\d+]/g,'');
     return `<div class="card fcard ${urgent?'urgent':''}">
       ${urgent?'<div class="urgent-strip">🔴 מתחת לסף הדחוף</div>':''}
       <h3>${esc(l.title)}</h3>
-      <div class="fmeta">${l.town?`<span>📍 ${esc(l.town)}</span>`:''}${l.price?`<span class="price">₪${fmt(l.price)}</span>`:''}
+      <div class="fmeta"><span class="tag web">${pt}</span>${l.town?`<span>📍 ${esc(l.town)}</span>`:''}${l.price?`<span class="price">₪${fmt(l.price)}</span>`:''}
+        ${l.dunam?`<span>🏞️ ${l.dunam} דונם</span>`:''}${house}
         <span class="badge">עודכן: ${new Date(l.at).toLocaleDateString('he-IL')}${l.by?' · '+esc(l.by):''}</span></div>
+      ${l.note?`<div class="muted" style="margin:-4px 0 10px">📝 ${esc(l.note)}</div>`:''}
       <div class="row">
         <button class="btn sm statusbtn ${st[2]}" onclick='cycleLead(${JSON.stringify(l.id)})'>${st[1]} ←</button>
+        ${tel?`<a class="btn sm" href="tel:${tel}">📞 חיוג</a>`:''}
         ${l.link?`<a class="btn sm" href="${escAttr(l.link)}" target="_blank" rel="noopener">פתח ↗</a>`:''}
         <button class="btn sm" style="color:var(--clay)" onclick='delLead(${JSON.stringify(l.id)})'>מחק</button>
       </div></div>`;
@@ -632,13 +860,14 @@ async function boot(fromSave){
   const need=!GH.ok();
   document.getElementById('setupNote').style.display=need?'block':'none';
   const cs=document.getElementById('connState');
-  if(need){ cs.textContent='לא מחובר'; renderFeed(); return; }
+  if(need){ cs.textContent='לא מחובר'; renderFeed(); renderMap(); return; }
   cs.textContent='בודק חיבור…';
   try{ await GH.read('profile.json'); cs.textContent='מחובר ✓';
     if(fromSave) toast('מחובר ✓'); }
   catch(e){ cs.textContent='שגיאה: '+e.message; toast('החיבור נכשל — בדוק טוקן/ריפו'); return; }
-  await Promise.all([loadProfile(), loadCRM(), loadSprint()]);
+  await Promise.all([loadProfile(), loadCRM(), loadSprint(), loadZones()]);
   await loadFeed();
+  renderMap();   // המפה היא מסך הבית — מציירים אותה מיד עם הנתונים
 }
 boot();
 </script>
