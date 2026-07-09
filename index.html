@@ -751,23 +751,46 @@ function inAnyZone(pt){ return ZONES.some(z=>inPoly(pt,z.points)); }
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2400); }
 function toggleNav(){
-  document.body.classList.toggle('nav-open');
-  document.getElementById('navToggle').textContent =
-    document.body.classList.contains('nav-open') ? '✕' : '☰';
+  const navOpen = document.body.classList.contains('nav-open');
+  const anyTabOpen = Array.from(document.querySelectorAll('.tab')).some(t => t.classList.contains('on'));
+
+  if (navOpen || anyTabOpen) {
+    // מילוט אוניברסלי: מעלים הכל (סרגל + חלונות) וחוזרים למפה
+    document.body.classList.remove('nav-open');
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === 'map'));
+    document.getElementById('navToggle').textContent = '☰';
+    renderMap();
+  } else {
+    // פתיחת הסרגל בלבד
+    document.body.classList.add('nav-open');
+    document.getElementById('navToggle').textContent = '✕';
+  }
 }
+
 function go(t){
   if(t==='map'){
-    if(document.body.classList.contains('nav-open')) toggleNav();
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
-    document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab==='map'));
-    renderMap();
+    toggleNav(); // מפעיל את הסגירה החכמה
     return;
   }
+  
+  // 1. סוגרים את הסרגל כדי שלא יסתיר את החלון החדש
+  document.body.classList.remove('nav-open');
+  // 2. משאירים את הלחצן על ✕ כדי שאפשר יהיה לסגור דרכו את החלון
+  document.getElementById('navToggle').textContent = '✕';
+
+  // 3. אם החלון המבוקש כבר פתוח - סגור אותו וחזור למפה
+  const targetTab = document.getElementById('tab-'+t);
+  if (targetTab && targetTab.classList.contains('on')) {
+     toggleNav(); 
+     return;
+  }
+
+  // 4. פתיחת החלון המבוקש
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on', x.id==='tab-'+t));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='sheet') renderSheet();
 }
-
 /* ---------- 📊 גיליון ---------- */
 let SHEET_SORT={key:'urgent',dir:-1};
 const SHEET_COLS=[
