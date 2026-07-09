@@ -7,6 +7,7 @@ email_ingest.py — קורא את תיבת המכונה (IMAP), מזהה מקו�
 """
 
 import sys, hashlib, imaplib, email
+from datetime import datetime, timedelta, timezone
 from email.header import decode_header
 import urllib.parse
 from bs4 import BeautifulSoup
@@ -113,8 +114,11 @@ def main():
 
     M = imaplib.IMAP4_SSL(EMAIL_HOST)
     M.login(EMAIL_USER, EMAIL_PASS)
-    M.select(EMAIL_FOLDER)
-    typ, data = M.search(None, "UNSEEN")
+    M.select('"' + EMAIL_FOLDER.strip('"') + '"')
+    # חיפוש לפי תאריך (3 ימים אחורה) — לא תלוי בסימון "נקרא"/"לא נקרא".
+    # הזיכרון (seen_email.json) מונע כפילויות, אז בטוח לסרוק גם מיילים שנקראו.
+    since = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%d-%b-%Y")
+    typ, data = M.search(None, f'(SINCE "{since}")')
     ids = data[0].split() if data and data[0] else []
 
     findings = []
@@ -125,7 +129,6 @@ def main():
         msg = email.message_from_bytes(msg_data[0][1])
         from_addr = decode_hdr(msg.get("From", "")).lower()
         body = get_html_body(msg)
-        M.store(num, "+FLAGS", "\\Seen")
 
         if "facebookmail.com" in from_addr:
             if not C.SOURCES.get("facebook", True):
