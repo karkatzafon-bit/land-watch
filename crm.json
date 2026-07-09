@@ -1,1 +1,19 @@
-[]
+[
+ {
+  "id": "l1783599597744",
+  "title": "בית סבתא",
+  "ptype": "house",
+  "town": "משמר הירדן",
+  "price": 200000,
+  "link": "",
+  "dunam": 0.5,
+  "phone": "",
+  "note": "",
+  "status": "new",
+  "by": "ניתאי",
+  "at": 1783599597745,
+  "sqm": null,
+  "rooms": null,
+  "cond": "חדש"
+ }
+]
