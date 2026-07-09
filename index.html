@@ -24,21 +24,28 @@ a{color:inherit}
 .wrap{margin:0;padding:0}
 
 /* countdown — שבב צף */
-#countdown{position:fixed;top:12px;left:12px;z-index:600;text-align:left;
-  font-family:"Space Mono",monospace;font-size:10.5px;color:#D8DEC8;
-  background:rgba(30,41,31,.88);border:1px solid rgba(255,255,255,.15);
-  border-radius:14px;padding:7px 13px;backdrop-filter:blur(6px);
-  box-shadow:0 4px 14px rgba(0,0,0,.3)}
-#countdown b{display:block;font-size:23px;color:var(--gold);line-height:1.05}
+#countdown{position:fixed;top:12px;left:6px;z-index:480;text-align:center;width:46px;
+  font-family:"Space Mono",monospace;font-size:7.5px;color:#D8DEC8;
+  background:rgba(30,41,31,.94);border:1px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:5px 2px 4px;backdrop-filter:blur(6px);
+  box-shadow:0 4px 12px rgba(0,0,0,.3);line-height:1.15;letter-spacing:0}
+#countdown b{display:block;font-size:16px;color:var(--gold);line-height:1}
 #countdown.danger b{color:#FF9B76;animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 /* סרגל צד (ימין) */
-nav{position:fixed;top:0;bottom:0;right:0;width:62px;background:rgba(251,250,245,.94);
+nav{position:fixed;top:0;bottom:0;right:0;width:62px;background:rgba(251,250,245,.96);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-inline-start:1px solid var(--line);display:flex;flex-direction:column;
   justify-content:center;gap:2px;z-index:700;
-  box-shadow:-4px 0 18px rgba(34,48,31,.10);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  box-shadow:-4px 0 18px rgba(34,48,31,.10);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  transform:translateX(0);transition:transform .25s ease}
+body:not(.nav-open) nav{transform:translateX(100%)}
+#navToggle{position:fixed;top:12px;right:10px;z-index:710;width:44px;height:44px;
+  border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.97);
+  font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.22);
+  display:flex;align-items:center;justify-content:center;transition:right .25s ease}
+body.nav-open #navToggle{right:70px}
 nav button{border:0;background:none;padding:9px 2px;font-family:"Assistant";
   font-size:10px;font-weight:700;color:var(--ink-soft);cursor:pointer;position:relative;
   transition:color .15s}
@@ -51,32 +58,46 @@ nav button.on::after{content:'';position:absolute;right:0;top:50%;transform:tran
 
 /* מגירות — פאנלים שמחליקים מעל המפה */
 main{position:static}
-.tab{position:fixed;top:0;bottom:0;right:62px;width:min(430px,calc(100vw - 62px));
+.tab{position:fixed;top:0;bottom:0;right:0;width:min(430px,calc(100vw - 62px));transition:transform .25s ease, right .25s ease;
   background:var(--paper);z-index:500;overflow-y:auto;padding:18px 16px 28px;
   box-shadow:-10px 0 32px rgba(0,0,0,.20);transform:translateX(120%);
   transition:transform .25s ease;display:block;border-inline-start:1px solid var(--line)}
 .tab.on{transform:none}
+body.nav-open .tab{right:62px;width:min(430px,calc(100vw - 62px))}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 
 /* המפה — הרקע של הכל */
 #mapStage{position:fixed;inset:0;z-index:0}
 #leadMap{position:absolute;inset:0;height:100%!important;border:none!important;border-radius:0!important}
-#mapControls{position:fixed;top:12px;right:74px;z-index:450;display:flex;
-  flex-direction:column;gap:8px;align-items:flex-end}
-#mapControls .btn{box-shadow:0 3px 12px rgba(0,0,0,.22)}
-#searchBox{position:fixed;top:12px;right:50%;transform:translateX(50%);z-index:470;
+#mapControls{position:fixed;top:0;bottom:0;left:0;z-index:450;display:flex;
+  flex-direction:column;gap:9px;align-items:center;justify-content:center;
+  width:58px;background:rgba(251,250,245,.92);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);border-inline-end:1px solid var(--line);
+  box-shadow:4px 0 16px rgba(34,48,31,.10);
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.mbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;font-size:20px;line-height:1;cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;
+  transition:transform .12s}
+.mbtn:active{transform:scale(.9)}
+.mbtn.primary{background:var(--olive);border-color:var(--olive)}
+.mbtn.act{background:#E7F1E8;border-color:var(--olive)}
+.mbtn.danger{background:var(--clay-soft);border-color:var(--clay)}
+#searchBox{position:fixed;top:12px;right:64px;z-index:470;transition:right .25s ease;
   display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.97);
   border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 10px;
   box-shadow:0 4px 16px rgba(0,0,0,.22);backdrop-filter:blur(8px);
-  width:min(420px,calc(100vw - 170px))}
+  left:66px;max-width:460px;margin-inline-start:auto}
+body.nav-open #searchBox{right:126px}
 #searchBox input{flex:1;min-width:0;border:none;background:transparent;
   padding:7px 8px;font-family:"Assistant";font-size:15px;color:var(--ink);outline:none}
 #searchBox .btn{box-shadow:none;padding:7px 14px;border-radius:999px}
-#mapInfo{position:fixed;bottom:12px;right:74px;left:12px;z-index:440;
+#mapInfo{position:fixed;bottom:12px;right:12px;left:66px;transition:right .25s ease;z-index:440;
   background:rgba(251,250,245,.92);backdrop-filter:blur(8px);border:1px solid var(--line);
-  border-radius:14px;padding:8px 12px;font-size:12px;max-height:26vh;overflow-y:auto;
+  border-radius:14px;padding:8px 12px;font-size:12px;max-height:20vh;overflow-y:auto;font-size:11px;
   box-shadow:0 6px 20px rgba(0,0,0,.15)}
 #mapInfo:empty{display:none}
+body.nav-open #mapInfo{right:74px}
 h2{font-family:"Frank Ruhl Libre",serif;font-size:24px;margin:2px 0 14px}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;
   padding:16px;margin-bottom:14px;box-shadow:var(--shadow);
@@ -179,15 +200,15 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
 <!-- כפתורים צפים על המפה -->
 <div id="mapControls">
-  <button class="btn sm p" id="drawBtn" onclick="toggleDraw()">✏️ סמן גזרה</button>
-  <button class="btn sm" id="drawDone" style="display:none" onclick="finishZone()">✔ סיים גזרה</button>
-  <button class="btn sm" id="drawCancel" style="display:none;color:var(--clay)" onclick="cancelZone()">✖ בטל</button>
-  <button class="btn sm" id="satBtn" onclick="toggleSat()">🛰️ לוויין</button>
-  <button class="btn sm" onclick="goHomeZone()">🎯 לגזרה</button>
-  <button class="btn sm" onclick="openGovmapTenders()">🏛️ מכרזי רמ״י</button>
-  <button class="btn sm" id="measBtn" onclick="toggleMeasure()">📏 מדוד שטח</button>
-  <button class="btn sm" id="measDone" style="display:none" onclick="endMeasure()">✔ סיים מדידה</button>
-  <button class="btn sm" onclick="locateMe()">📍 אני</button>
+  <button class="mbtn primary" id="drawBtn" onclick="toggleDraw()" title="סמן גזרה" aria-label="סמן גזרה">✏️</button>
+  <button class="mbtn act" id="drawDone" style="display:none" onclick="finishZone()" title="סיים גזרה">✔</button>
+  <button class="mbtn danger" id="drawCancel" style="display:none" onclick="cancelZone()" title="בטל">✖</button>
+  <button class="mbtn" id="satBtn" onclick="toggleSat()" title="לוויין / משולבת / מפה" aria-label="לוויין">🛰️</button>
+  <button class="mbtn" onclick="goHomeZone()" title="חזרה לגזרה" aria-label="לגזרה">🎯</button>
+  <button class="mbtn" onclick="openGovmapTenders()" title="מכרזי רמ״י ב-GovMap" aria-label="מכרזי רמ״י">🏛️</button>
+  <button class="mbtn" id="measBtn" onclick="toggleMeasure()" title="מדידת שטח בדונם" aria-label="מדוד שטח">📏</button>
+  <button class="mbtn act" id="measDone" style="display:none" onclick="endMeasure()" title="סיים מדידה">✔</button>
+  <button class="mbtn" onclick="locateMe()" title="המיקום שלי" aria-label="המיקום שלי">📍</button>
 </div>
 
 <!-- רצועת מידע תחתונה -->
@@ -202,7 +223,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
 <main class="wrap">
 
-  <div id="setupNote" class="setup-need" style="display:none;position:fixed;top:12px;right:74px;left:12px;z-index:460">
+  <div id="setupNote" class="setup-need" style="display:none;position:fixed;top:64px;right:64px;left:66px;z-index:460">
     ⚙️ כדי להתחבר לנתונים — פתח <b>🔧 הגדרות</b> בסרגל והזן ריפו + טוקן (פעם אחת למכשיר).
   </div>
 
@@ -363,6 +384,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   </div>
 
 </main>
+
+<button id="navToggle" onclick="toggleNav()" title="תפריט" aria-label="תפריט">☰</button>
 
 <nav>
   <button class="on" data-tab="map" onclick="go('map')"><span class="ico">🗺️</span>מפה</button>
@@ -711,8 +734,14 @@ function inAnyZone(pt){ return ZONES.some(z=>inPoly(pt,z.points)); }
 
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2400); }
+function toggleNav(){
+  document.body.classList.toggle('nav-open');
+  document.getElementById('navToggle').textContent =
+    document.body.classList.contains('nav-open') ? '✕' : '☰';
+}
 function go(t){
   if(t==='map'){
+    if(document.body.classList.contains('nav-open')) toggleNav();
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab==='map'));
     renderMap();
@@ -774,7 +803,7 @@ function renderMap(){
   const missing=[];
   if(!MAP){
     MAP = L.map('leadMap', {zoomControl:false}).setView([33.02,35.58], 10);
-    L.control.zoom({position:'bottomleft'}).addTo(MAP);
+    L.control.zoom({position:'bottomright'}).addTo(MAP);
     BASE_OSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       {attribution:'© OpenStreetMap', maxZoom:19});
     BASE_SAT = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
