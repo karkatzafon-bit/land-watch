@@ -64,6 +64,12 @@ main{position:static}
 #mapControls{position:fixed;top:12px;right:74px;z-index:450;display:flex;
   flex-direction:column;gap:8px;align-items:flex-end}
 #mapControls .btn{box-shadow:0 3px 12px rgba(0,0,0,.22)}
+#searchBox{display:flex;gap:6px;align-items:center;background:rgba(251,250,245,.95);
+  border:1px solid var(--line);border-radius:12px;padding:5px 6px;
+  box-shadow:0 3px 12px rgba(0,0,0,.22);backdrop-filter:blur(6px)}
+#searchBox input{width:min(210px,46vw);border:none;background:transparent;
+  padding:6px 8px;font-family:"Assistant";font-size:14px;color:var(--ink);outline:none}
+#searchBox .btn{box-shadow:none;padding:6px 11px}
 #mapInfo{position:fixed;bottom:12px;right:74px;left:12px;z-index:440;
   background:rgba(251,250,245,.92);backdrop-filter:blur(8px);border:1px solid var(--line);
   border-radius:14px;padding:8px 12px;font-size:12px;max-height:26vh;overflow-y:auto;
@@ -163,6 +169,12 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
 <!-- כפתורים צפים על המפה -->
 <div id="mapControls">
+  <div id="searchBox">
+    <input type="text" id="placeQ" placeholder="🔍 חפש יישוב / מקום…" list="placeList"
+           onkeydown="if(event.key==='Enter')goPlace()">
+    <datalist id="placeList"></datalist>
+    <button class="btn sm p" onclick="goPlace()">עבור</button>
+  </div>
   <button class="btn sm p" id="drawBtn" onclick="toggleDraw()">✏️ סמן גזרה</button>
   <button class="btn sm" id="drawDone" style="display:none" onclick="finishZone()">✔ סיים גזרה</button>
   <button class="btn sm" id="drawCancel" style="display:none;color:var(--clay)" onclick="cancelZone()">✖ בטל</button>
@@ -444,6 +456,38 @@ let MAP=null, MAP_LAYER=null, ZONE_LAYER=null;
 let BASE_OSM=null, BASE_SAT=null, BASE_LBL=null, BASE_MODE=0, MY_MARK=null, FIT_DONE=false;
 let ZONES=[], ZONES_SHA=null;
 
+/* --- 🔍 חיפוש מקומות: מיידי מהמילון + כל-ארצי דרך Nominatim (OSM) --- */
+let SEARCH_MARK=null;
+function fillPlaceList(){
+  const dl=document.getElementById('placeList');
+  if(dl && !dl.children.length)
+    dl.innerHTML=Object.keys(TOWNS).map(t=>`<option value="${t}">`).join('');
+}
+function placeFlyTo(c, label, zoom){
+  if(SEARCH_MARK) MAP.removeLayer(SEARCH_MARK);
+  SEARCH_MARK=L.marker(c).addTo(MAP).bindPopup('🔍 '+esc(label)).openPopup();
+  MAP.setView(c, zoom||14);
+}
+async function goPlace(){
+  const q=document.getElementById('placeQ').value.trim();
+  if(!q || !MAP) return;
+  // שכבה 1: המילון המקומי — מיידי, בלי רשת
+  const local=townCoords(q);
+  if(local){ placeFlyTo(local, q, 14); return; }
+  // שכבה 2: כל מקום בישראל — Nominatim של OpenStreetMap
+  toast('מחפש…');
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=il&accept-language=he&q='
+      +encodeURIComponent(q), {headers:{'Accept':'application/json'}});
+    const res=await r.json();
+    if(res && res.length){
+      placeFlyTo([+res[0].lat,+res[0].lon], res[0].display_name.split(',')[0], 14);
+    } else {
+      toast('לא נמצא "'+q+'" — נסה שם מדויק יותר');
+    }
+  }catch(e){ toast('שגיאת חיפוש: '+e.message); }
+}
+
 /* --- 🛰️ מצבי מפה: דרכים → לוויין → משולבת (תצלום+שמות) --- */
 function toggleSat(){
   if(!MAP) return;
@@ -713,6 +757,7 @@ function renderMap(){
     MAP_LAYER = L.layerGroup().addTo(MAP);
     MAP.on('click', drawClick);
     MAP.on('contextmenu', longPressAdd);   // לחיצה ארוכה בנייד
+    fillPlaceList();                        // השלמות חיפוש מהמילון
   }
   setTimeout(()=>MAP.invalidateSize(), 150);
 
