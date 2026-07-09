@@ -83,6 +83,8 @@ body.nav-open .tab{right:62px;width:min(430px,calc(100vw - 62px))}
 .mbtn.primary{background:var(--olive);border-color:var(--olive)}
 .mbtn.act{background:#E7F1E8;border-color:var(--olive)}
 .mbtn.danger{background:var(--clay-soft);border-color:var(--clay)}
+.mbtn.filter-on{background:#B3261E;border-color:#B3261E;color:#fff;
+  box-shadow:0 0 0 3px rgba(179,38,30,.25),0 2px 8px rgba(0,0,0,.2)}
 #searchBox{position:fixed;top:12px;right:64px;z-index:470;transition:right .25s ease;
   display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.97);
   border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 10px;
@@ -203,6 +205,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   <button class="mbtn primary" id="drawBtn" onclick="toggleDraw()" title="סמן גזרה" aria-label="סמן גזרה">✏️</button>
   <button class="mbtn act" id="drawDone" style="display:none" onclick="finishZone()" title="סיים גזרה">✔</button>
   <button class="mbtn danger" id="drawCancel" style="display:none" onclick="cancelZone()" title="בטל">✖</button>
+  <button class="mbtn" id="zoneFilterBtn" onclick="toggleZoneFilter()" title="הצג רק לידים בתוך הגזרה" aria-label="סנן לגזרה">⬠</button>
   <button class="mbtn" id="satBtn" onclick="toggleSat()" title="לוויין / משולבת / מפה" aria-label="לוויין">🛰️</button>
   <button class="mbtn" onclick="goHomeZone()" title="חזרה לגזרה" aria-label="לגזרה">🎯</button>
   <button class="mbtn" onclick="openGovmapTenders()" title="מכרזי רמ״י ב-GovMap" aria-label="מכרזי רמ״י">🏛️</button>
@@ -540,6 +543,16 @@ async function goPlace(){
   }catch(e){ toast('שגיאת חיפוש: '+e.message); }
 }
 
+/* --- ⬠ פילטר גזרה: הצג רק לידים בתוך הגזרות --- */
+let ZONE_FILTER=false;
+function toggleZoneFilter(){
+  if(!ZONES.length){ toast('אין גזרות עדיין — סמן גזרה קודם ✏️'); return; }
+  ZONE_FILTER=!ZONE_FILTER;
+  document.getElementById('zoneFilterBtn').classList.toggle('filter-on', ZONE_FILTER);
+  toast(ZONE_FILTER ? '⬠ מציג רק לידים בתוך הגזרה' : 'מציג את כל הלידים');
+  renderMap();
+}
+
 /* --- 🛰️ מצבי מפה: דרכים → לוויין → משולבת (תצלום+שמות) --- */
 function toggleSat(){
   if(!MAP) return;
@@ -718,7 +731,10 @@ function endDraw(){
 }
 function delZone(i){
   if(!confirm('למחוק את הגזרה "'+ZONES[i].name+'"?')) return;
-  ZONES.splice(i,1); pushZones('remove zone'); renderMap();
+  ZONES.splice(i,1);
+  if(!ZONES.length && ZONE_FILTER){ ZONE_FILTER=false;
+    document.getElementById('zoneFilterBtn').classList.remove('filter-on'); }
+  pushZones('remove zone'); renderMap();
 }
 
 /* --- נקודה בתוך פוליגון (ray casting) --- */
@@ -842,6 +858,7 @@ function renderMap(){
     const urgent = l.price && PROFILE && l.price < (PROFILE.urgent_below||0);
     const inZone = ZONES.length && inAnyZone(c);
     if(inZone) inZoneCount++;
+    if(ZONE_FILTER && !inZone) return;   // ⬠ פילטר גזרה פעיל — דלג על מה שבחוץ
     const st = STATUSES.find(s=>s[0]===l.status)||STATUSES[0];
     const fill = STATUS_COLOR[l.status]||'#F6F4ED';
     const ring = urgent ? '#A8492A' : (inZone ? '#B3261E' : '#1E2922');
@@ -873,7 +890,7 @@ function renderMap(){
   });
   if(pts.length && !DRAWING && !FIT_DONE){ MAP.fitBounds(L.latLngBounds(pts).pad(0.35)); FIT_DONE=true; }
   document.getElementById('zoneStats').textContent =
-    ZONES.length ? `⬠ ${ZONES.length} גזרות · ${inZoneCount}/${pts.length} לידים בגזרה` : '';
+    ZONES.length ? `⬠ ${ZONES.length} גזרות · ${ZONE_FILTER ? `מסונן: ${pts.length} בגזרה` : `${inZoneCount}/${pts.length} לידים בגזרה`}` : '';
   document.getElementById('mapLegend').innerHTML =
     STATUSES.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px">
       <span style="width:12px;height:12px;border-radius:50%;border:2px solid #1E2922;background:${STATUS_COLOR[s[0]]}"></span>${s[1]}</span>`).join('')
