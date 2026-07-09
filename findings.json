@@ -1,1 +1,44 @@
-[]
+[
+ {
+  "id": "82dbdcab6a10834a",
+  "ts": 1783635179,
+  "source": "rmi",
+  "kind": "listing",
+  "title": "ועדת הכספים אישרה: הארכת תקופת מסלול פיצוי מקל ומטיב לעסקים בצפון , הסמוכים ליישובי קו העימות ...",
+  "link": "https://main.knesset.gov.il/News/PressReleases/Pages/press08072026c.aspx",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
+  "id": "069c77b566ff18c9",
+  "ts": 1783635179,
+  "source": "rmi",
+  "kind": "listing",
+  "title": "מודעה (ללא כותרת) — היכנס לבדוק",
+  "link": "https://www.google.com/alerts/share?hl=iw&gl=US&ru=https://main.knesset.gov.il/News/PressReleases/Pages/press08072026c.aspx&ss=fb&rt=%D7%95%D7%A2%D7%93%D7%AA+%D7%94%D7%9B%D7%A1%D7%A4%D7%99%D7%9D+%D7%90%D7%99%D7%A9%D7%A8%D7%94:+%D7%94%D7%90%D7%A8%D7%9B%D7%AA+%D7%AA%D7%A7%D7%95%D7%A4%D7%AA+%D7%9E%D7%A1%D7%9C%D7%95%D7%9C+%D7%A4%D7%99%D7%A6%D7%95%D7%99+%D7%9E%D7%A7%D7%9C+%D7%95%D7%9E%D7%98%D7%99%D7%91+%D7%9C%D7%A2%D7%A1%D7%A7%D7%99%D7%9D+%D7%91%D7%A6%D7%A4%D7%95%D7%9F,+%D7%94%D7%A1%D7%9E%D7%95%D7%9B%D7%99%D7%9D+%D7%9C%D7%99%D7%99%D7%A9%D7%95%D7%91%D7%99+%D7%A7%D7%95+%D7%94%D7%A2%D7%99%D7%9E%D7%95%D7%AA+...&cd=KhQxNDk5NTYwNzEyNDM2NzgyMjA4MDIaNTQwMDRhZWQ0NjMzMzg0Yjpjb206aXc6VVM&ssp=AMJHsmXk_SwD3gg3kw4CtMMKYvnrgQHjVA",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
+  "id": "6c360bb063ffa835",
+  "ts": 1783635179,
+  "source": "rmi",
+  "kind": "listing",
+  "title": "סימון כלא רלוונטי",
+  "link": "https://www.google.com/alerts/feedback?ffu=https://main.knesset.gov.il/News/PressReleases/Pages/press08072026c.aspx&source=alertsmail&hl=iw&gl=US&msgid=MTQ5OTU2MDcxMjQzNjc4MjIwODA&s=AB2Xq4gNr8I94H5rk-Coku4L8YXYEQDBKksdoo4",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ }
+]
