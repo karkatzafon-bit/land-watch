@@ -64,12 +64,14 @@ main{position:static}
 #mapControls{position:fixed;top:12px;right:74px;z-index:450;display:flex;
   flex-direction:column;gap:8px;align-items:flex-end}
 #mapControls .btn{box-shadow:0 3px 12px rgba(0,0,0,.22)}
-#searchBox{display:flex;gap:6px;align-items:center;background:rgba(251,250,245,.95);
-  border:1px solid var(--line);border-radius:12px;padding:5px 6px;
-  box-shadow:0 3px 12px rgba(0,0,0,.22);backdrop-filter:blur(6px)}
-#searchBox input{width:min(210px,46vw);border:none;background:transparent;
-  padding:6px 8px;font-family:"Assistant";font-size:14px;color:var(--ink);outline:none}
-#searchBox .btn{box-shadow:none;padding:6px 11px}
+#searchBox{position:fixed;top:12px;right:50%;transform:translateX(50%);z-index:470;
+  display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.97);
+  border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 10px;
+  box-shadow:0 4px 16px rgba(0,0,0,.22);backdrop-filter:blur(8px);
+  width:min(420px,calc(100vw - 170px))}
+#searchBox input{flex:1;min-width:0;border:none;background:transparent;
+  padding:7px 8px;font-family:"Assistant";font-size:15px;color:var(--ink);outline:none}
+#searchBox .btn{box-shadow:none;padding:7px 14px;border-radius:999px}
 #mapInfo{position:fixed;bottom:12px;right:74px;left:12px;z-index:440;
   background:rgba(251,250,245,.92);backdrop-filter:blur(8px);border:1px solid var(--line);
   border-radius:14px;padding:8px 12px;font-size:12px;max-height:26vh;overflow-y:auto;
@@ -167,14 +169,16 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
 <div id="countdown"><b>—</b>ימים לדדליין</div>
 
+<!-- 🔍 חיפוש — למעלה במרכז, כמו Google Maps -->
+<div id="searchBox">
+  <input type="text" id="placeQ" placeholder="🔍 חפש מקום לבדיקה…" list="placeList"
+         onkeydown="if(event.key==='Enter')goPlace()">
+  <datalist id="placeList"></datalist>
+  <button class="btn sm p" onclick="goPlace()">עבור</button>
+</div>
+
 <!-- כפתורים צפים על המפה -->
 <div id="mapControls">
-  <div id="searchBox">
-    <input type="text" id="placeQ" placeholder="🔍 חפש יישוב / מקום…" list="placeList"
-           onkeydown="if(event.key==='Enter')goPlace()">
-    <datalist id="placeList"></datalist>
-    <button class="btn sm p" onclick="goPlace()">עבור</button>
-  </div>
   <button class="btn sm p" id="drawBtn" onclick="toggleDraw()">✏️ סמן גזרה</button>
   <button class="btn sm" id="drawDone" style="display:none" onclick="finishZone()">✔ סיים גזרה</button>
   <button class="btn sm" id="drawCancel" style="display:none;color:var(--clay)" onclick="cancelZone()">✖ בטל</button>
@@ -457,16 +461,41 @@ let BASE_OSM=null, BASE_SAT=null, BASE_LBL=null, BASE_MODE=0, MY_MARK=null, FIT_
 let ZONES=[], ZONES_SHA=null;
 
 /* --- 🔍 חיפוש מקומות: מיידי מהמילון + כל-ארצי דרך Nominatim (OSM) --- */
-let SEARCH_MARK=null;
+let SEARCH_MARK=null, LAST_PLACE=null;
 function fillPlaceList(){
   const dl=document.getElementById('placeList');
   if(dl && !dl.children.length)
     dl.innerHTML=Object.keys(TOWNS).map(t=>`<option value="${t}">`).join('');
 }
+function clearSearch(){
+  if(SEARCH_MARK){ MAP.removeLayer(SEARCH_MARK); SEARCH_MARK=null; }
+  LAST_PLACE=null;
+  document.getElementById('placeQ').value='';
+}
+function leadFromPlace(){
+  if(!LAST_PLACE) return;
+  // ממלא את טופס הליד: יישוב מזוהה (או הקרוב), והשם בתיאור
+  const near = TOWNS[LAST_PLACE.label] ? LAST_PLACE.label
+             : nearestTown({lat:LAST_PLACE.c[0], lng:LAST_PLACE.c[1]});
+  document.getElementById('leadTown').value = near || '';
+  document.getElementById('leadTitle').value = LAST_PLACE.label;
+  go('crm');
+  toast('מלא פרטים ושמור — ' + LAST_PLACE.label);
+  setTimeout(()=>document.getElementById('leadPrice').focus(), 350);
+}
 function placeFlyTo(c, label, zoom){
   if(SEARCH_MARK) MAP.removeLayer(SEARCH_MARK);
-  SEARCH_MARK=L.marker(c).addTo(MAP).bindPopup('🔍 '+esc(label)).openPopup();
-  MAP.setView(c, zoom||14);
+  LAST_PLACE={c:c, label:label};
+  SEARCH_MARK=L.marker(c).addTo(MAP).bindPopup(
+    `<div dir="rtl" style="font-family:Assistant,sans-serif;min-width:170px;text-align:center">
+      <b>🔍 ${esc(label)}</b><br>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:8px">
+        <button onclick="leadFromPlace()" style="padding:6px 12px;border-radius:999px;border:1px solid #2F5D3A;background:#2F5D3A;color:#fff;font-family:Assistant;font-weight:700;cursor:pointer">➕ הוסף כליד</button>
+        <button onclick="clearSearch()" style="padding:6px 12px;border-radius:999px;border:1px solid #C7C2B2;background:#fff;font-family:Assistant;font-weight:700;cursor:pointer">✖ נקה</button>
+      </div>
+      <div style="font-size:11px;color:#5B6152;margin-top:6px">טיפ: 🛰️ לראות את השטח · 📏 למדוד</div>
+    </div>`, {minWidth:190}).openPopup();
+  MAP.setView(c, zoom||15);
 }
 async function goPlace(){
   const q=document.getElementById('placeQ').value.trim();
