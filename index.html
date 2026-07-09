@@ -181,6 +181,15 @@ ul.tasks input{width:18px;height:18px;accent-color:var(--olive);margin-top:2px;f
 #sheet tbody tr:active{background:#F0EDE2}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:8px}
+.hcard{border-inline-start:5px solid #999;padding:12px 14px;margin-bottom:10px;background:#fff;
+  border-radius:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  border-inline-end:1px solid var(--line);box-shadow:var(--shadow)}
+.hcard.ok{border-inline-start-color:#3E8E4E}
+.hcard.warn{border-inline-start-color:#E8A13D}
+.hcard.bad{border-inline-start-color:#C0392B}
+.hcard b.t{font-size:15px}
+.hcard .d{font-size:13px;color:var(--ink-soft);margin-top:3px}
+.hcard .fix{font-size:13px;margin-top:6px;background:#FFF6E4;border-radius:8px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -375,6 +384,16 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
     </div>
   </div>
 
+  <!-- HEALTH: מצב מערכת -->
+  <div class="tab" id="tab-health">
+    <h2>🩺 מצב מערכת</h2>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn p sm" onclick="runDiagnostics()">🔄 הרץ בדיקה</button>
+      <span class="muted" id="healthTime"></span>
+    </div>
+    <div id="healthBox"><div class="empty">לחץ "הרץ בדיקה" לאבחון מלא</div></div>
+  </div>
+
   <!-- SHEET: כל הלידים בטבלה -->
   <div class="tab" id="tab-sheet">
     <h2>📊 גיליון לידים</h2>
@@ -398,6 +417,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   <button data-tab="sprint" onclick="go('sprint')"><span class="ico">🎯</span>ספרינט</button>
   <button data-tab="profile" onclick="go('profile')"><span class="ico">⚙️</span>פרופיל</button>
   <button data-tab="search" onclick="go('search')"><span class="ico">🔍</span>חיפוש</button>
+  <button data-tab="health" onclick="go('health')"><span class="ico">🩺</span>מצב</button>
   <button data-tab="setup" onclick="go('setup')"><span class="ico">🔧</span>הגדרות</button>
 </nav>
 
@@ -405,6 +425,12 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
 <script>
 /* ---------- safe storage (device-local: connection + name only) ---------- */
+const CLIENT_LOG=[];
+function clog(level,msg){ CLIENT_LOG.unshift({t:new Date(),level,msg:String(msg).slice(0,300)});
+  if(CLIENT_LOG.length>30) CLIENT_LOG.pop(); }
+window.addEventListener('error', e=>clog('error', e.message+' @'+(e.filename||'').split('/').pop()+':'+e.lineno));
+window.addEventListener('unhandledrejection', e=>clog('error','Promise: '+(e.reason&&e.reason.message||e.reason)));
+
 const MEM = {};
 const store = {
   get(k){ try{ return localStorage.getItem(k) ?? MEM[k] ?? null; }catch(e){ return MEM[k] ?? null; } },
@@ -748,7 +774,8 @@ function inPoly(pt, poly){
 }
 function inAnyZone(pt){ return ZONES.some(z=>inPoly(pt,z.points)); }
 
-function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+function toast(t){ clog(/שגיא|נכשל|לא הצלחתי/.test(t)?'error':'info', t);
+  const el=document.getElementById('toast'); el.textContent=t;
   el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2400); }
 function toggleNav(){
   const navOpen = document.body.classList.contains('nav-open');
@@ -790,7 +817,103 @@ function go(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on', x.id==='tab-'+t));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='sheet') renderSheet();
+  if(t==='health') runDiagnostics();
 }
+/* ---------- 🩺 מצב מערכת ---------- */
+function hCard(status,title,body){
+  const icon = status==='ok'?'✅':(status==='warn'?'⚠️':'❌');
+  const border = status==='ok'?'var(--olive-b)':(status==='warn'?'var(--gold)':'var(--clay)');
+  return `<div class="card" style="border-color:${border}">
+    <b>${icon} ${title}</b>
+    <div class="muted" style="margin-top:6px;font-size:13px;line-height:1.6">${body}</div></div>`;
+}
+async function runDiagnostics(){
+  const box=document.getElementById('healthBox');
+  box.innerHTML='<div class="empty">בודק…</div>';
+  document.getElementById('healthTime').textContent='';
+  const cards=[];
+
+  /* --- 1. חיבור --- */
+  if(!GH.ok()){
+    cards.push(hCard('err','אין חיבור לריפו',
+      'המכשיר הזה לא מחובר. פתח 🔧 הגדרות והזן בעל-ריפו, שם ריפו, וטוקן. בלי חיבור — הפיד, הלידים והגזרות לא נטענים.'));
+    box.innerHTML=cards.join(''); return;
+  }
+
+  /* --- 2. קריאת כל קבצי המערכת --- */
+  const files={'profile.json':'פרופיל סינון','findings.json':'פיד ממצאים','crm.json':'לידים',
+               'sprint.json':'ספרינט','zones.json':'גזרות','seen_email.json':'זיכרון מייל','seen.json':'זיכרון RSS'};
+  const got={};
+  for(const [f,label] of Object.entries(files)){
+    try{ const r=await GH.read(f); got[f]=r.data; }
+    catch(e){ got[f]=undefined;
+      if(f==='zones.json'||f==='seen.json') continue; // אופציונליים
+      cards.push(hCard(f==='seen_email.json'?'warn':'err', label+' — לא נקרא ('+f+')',
+        f==='seen_email.json'
+        ? 'קובץ הזיכרון עוד לא נוצר — כנראה הסקריפט טרם רץ בהצלחה. הרץ Run workflow ובדוק.'
+        : 'שגיאה: '+e.message+'. אם 401/403 — בעיית טוקן. אם 404 — הקובץ חסר בריפו.'));
+    }
+  }
+  if(got['profile.json']) cards.push(hCard('ok','חיבור וקריאה','הטוקן תקין וכל קבצי הליבה נקראים מהריפו.'));
+
+  /* --- 3. אבחון הפיד --- */
+  const F=got['findings.json'];
+  if(F){
+    const passed=F.filter(x=>x.passed).length, filtered=F.length-passed;
+    const lastTs=F.length?Math.max(...F.map(x=>x.ts||0)):0;
+    const ageH=lastTs?((Date.now()/1000-lastTs)/3600):null;
+    if(!F.length)
+      cards.push(hCard('warn','הפיד ריק',
+        'findings.json קיים אבל ריק — הסקריפט טרם מצא מיילים רלוונטיים. ודא שמיילים חדשים מגיעים לתיבת המכונה ושהם לא נפתחים ידנית (הסקריפט קורא רק "לא נקראו").'));
+    else{
+      cards.push(hCard('ok','פיד ממצאים',
+        `${F.length} פריטים · ${passed} עברו סינון · ${filtered} סוננו · עדכון אחרון: ${new Date(lastTs*1000).toLocaleString('he-IL')}`));
+      if(passed===0 && F.length>0){
+        const reasons={}; F.forEach(x=>{ if(!x.passed) reasons[x.reason]=(reasons[x.reason]||0)+1; });
+        cards.push(hCard('warn','כל הפריטים סוננו — למה?',
+          'פילוח סיבות: '+Object.entries(reasons).map(([r,n])=>`"${r}" ×${n}`).join(' · ')
+          +'<br>💡 אם מודעות אמיתיות נפסלות על "ללא מילת מפתח" — הוסף מילים בפרופיל. אם על אזור — בדוק שהיישוב ברשימת האזורים.'));
+      }
+      if(ageH!==null && ageH>2)
+        cards.push(hCard('warn','לא היו ממצאים חדשים '+Math.round(ageH)+' שעות',
+          'יתכן שפשוט לא הגיעו מיילים — או שהריצות נכשלות. בדוק ב-GitHub → Actions אם יש ריצות אדומות.'));
+    }
+  }
+
+  /* --- 4. זיכרון מייל --- */
+  if(got['seen_email.json'])
+    cards.push(hCard('ok','זיכרון מייל','הסקריפט זוכר '+got['seen_email.json'].length+' פריטים שכבר טופלו — לא יישלחו כפילויות.'));
+
+  /* --- 5. ריצות אוטומטיות (אם לטוקן יש הרשאה) --- */
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/actions/runs?per_page=5`,{headers:GH.hdrs()});
+    if(r.ok){
+      const runs=(await r.json()).workflow_runs.filter(w=>w.name==='land-watch').slice(0,3);
+      if(runs.length){
+        const bad=runs.filter(w=>w.conclusion==='failure').length;
+        const last=runs[0];
+        cards.push(hCard(bad?'err':'ok','ריצות אחרונות של הסקריפט',
+          runs.map(w=>`${w.conclusion==='success'?'✅':'❌'} ${new Date(w.created_at).toLocaleString('he-IL')} (${w.event==='schedule'?'אוטומטי':'ידני'})`).join('<br>')
+          +(bad?'<br>💡 יש ריצות שנכשלו — פתח את הלוג ב-Actions ושלח לי את שלב Run email ingest.':'')));
+        const lastAuto=runs.find(w=>w.event==='schedule');
+        if(!lastAuto) cards.push(hCard('warn','לא נמצאו ריצות אוטומטיות אחרונות',
+          'ייתכן שהמתזמן ישן (קורה בריפו ללא פעילות). ריצה ידנית מעירה אותו.'));
+      }
+    } else if(r.status===403)
+      cards.push(hCard('warn','אין גישה לסטטוס ריצות','לטוקן אין הרשאת Actions (זה בסדר). כדי לראות ריצות מכאן — הוסף לטוקן הרשאת Actions: Read.'));
+  }catch(e){}
+
+  /* --- 6. יומן שגיאות מקומי --- */
+  const errs=CLIENT_LOG.filter(l=>l.level==='error');
+  cards.push(hCard(errs.length?'warn':'ok','יומן האתר במכשיר הזה',
+    CLIENT_LOG.length
+    ? CLIENT_LOG.slice(0,10).map(l=>`${l.level==='error'?'❌':'ℹ️'} ${l.t.toLocaleTimeString('he-IL')} — ${esc(l.msg)}`).join('<br>')
+    : 'אין אירועים מאז פתיחת הדף.'));
+
+  document.getElementById('healthTime').textContent='נבדק: '+new Date().toLocaleTimeString('he-IL');
+  box.innerHTML=cards.join('');
+}
+
 /* ---------- 📊 גיליון ---------- */
 let SHEET_SORT={key:'urgent',dir:-1};
 const SHEET_COLS=[
