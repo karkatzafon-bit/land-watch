@@ -24,7 +24,7 @@ a{color:inherit}
 .wrap{margin:0;padding:0}
 
 /* countdown — שבב צף */
-#countdown{position:fixed;top:12px;left:6px;z-index:480;text-align:center;width:46px;
+#countdown{position:fixed;top:12px;left:10px;z-index:480;text-align:center;width:46px;
   font-family:"Space Mono",monospace;font-size:7.5px;color:#D8DEC8;
   background:rgba(30,41,31,.94);border:1px solid rgba(255,255,255,.15);
   border-radius:14px;padding:5px 2px 4px;backdrop-filter:blur(6px);
@@ -69,15 +69,14 @@ body.nav-open .tab{right:62px;width:min(430px,calc(100vw - 62px))}
 /* המפה — הרקע של הכל */
 #mapStage{position:fixed;inset:0;z-index:0}
 #leadMap{position:absolute;inset:0;height:100%!important;border:none!important;border-radius:0!important}
-#mapControls{position:fixed;top:0;bottom:0;left:0;z-index:450;display:flex;
-  flex-direction:column;gap:9px;align-items:center;justify-content:center;
-  width:58px;background:rgba(251,250,245,.92);backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);border-inline-end:1px solid var(--line);
-  box-shadow:4px 0 16px rgba(34,48,31,.10);
+#mapControls{position:fixed;top:0;bottom:0;left:10px;z-index:450;display:flex;
+  flex-direction:column;gap:10px;align-items:center;justify-content:center;
+  width:44px;background:none;border:none;box-shadow:none;pointer-events:none;
   padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#mapControls .mbtn{pointer-events:auto}
 .mbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
-  background:#fff;font-size:20px;line-height:1;cursor:pointer;
-  box-shadow:0 2px 8px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.97);font-size:20px;line-height:1;cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;
   transition:transform .12s}
 .mbtn:active{transform:scale(.9)}
 .mbtn.primary{background:var(--olive);border-color:var(--olive)}
@@ -89,12 +88,12 @@ body.nav-open .tab{right:62px;width:min(430px,calc(100vw - 62px))}
   display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.97);
   border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 10px;
   box-shadow:0 4px 16px rgba(0,0,0,.22);backdrop-filter:blur(8px);
-  left:66px;max-width:460px;margin-inline-start:auto}
+  left:62px;max-width:460px;margin-inline-start:auto}
 body.nav-open #searchBox{right:126px}
 #searchBox input{flex:1;min-width:0;border:none;background:transparent;
   padding:7px 8px;font-family:"Assistant";font-size:15px;color:var(--ink);outline:none}
 #searchBox .btn{box-shadow:none;padding:7px 14px;border-radius:999px}
-#mapInfo{position:fixed;bottom:12px;right:12px;left:66px;transition:right .25s ease;z-index:440;
+#mapInfo{position:fixed;bottom:12px;right:12px;left:62px;transition:right .25s ease;z-index:440;
   background:rgba(251,250,245,.92);backdrop-filter:blur(8px);border:1px solid var(--line);
   border-radius:14px;padding:8px 12px;font-size:12px;max-height:20vh;overflow-y:auto;font-size:11px;
   box-shadow:0 6px 20px rgba(0,0,0,.15)}
@@ -235,7 +234,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
 <main class="wrap">
 
-  <div id="setupNote" class="setup-need" style="display:none;position:fixed;top:64px;right:64px;left:66px;z-index:460">
+  <div id="setupNote" class="setup-need" style="display:none;position:fixed;top:64px;right:64px;left:62px;z-index:460">
     ⚙️ כדי להתחבר לנתונים — פתח <b>🔧 הגדרות</b> בסרגל והזן ריפו + טוקן (פעם אחת למכשיר).
   </div>
 
@@ -389,6 +388,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
     <h2>🩺 מצב מערכת</h2>
     <div class="row" style="margin-bottom:12px">
       <button class="btn p sm" onclick="runDiagnostics()">🔄 הרץ בדיקה</button>
+      <button class="btn sm" onclick="copyTechReport()">📋 העתק דוח טכני</button>
       <span class="muted" id="healthTime"></span>
     </div>
     <div id="healthBox"><div class="empty">לחץ "הרץ בדיקה" לאבחון מלא</div></div>
@@ -827,11 +827,25 @@ function hCard(status,title,body){
     <b>${icon} ${title}</b>
     <div class="muted" style="margin-top:6px;font-size:13px;line-height:1.6">${body}</div></div>`;
 }
+let TECH_REPORT=null;
+async function copyTechReport(){
+  if(!TECH_REPORT){ toast('הרץ בדיקה קודם 🔄'); return; }
+  const txt='```json\n'+JSON.stringify(TECH_REPORT,null,1)+'\n```';
+  try{ await navigator.clipboard.writeText(txt); toast('הדוח הועתק — הדבק בצ׳אט לקלוד 📋'); }
+  catch(e){ // iOS fallback
+    const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+    toast('הדוח הועתק 📋');
+  }
+}
 async function runDiagnostics(){
   const box=document.getElementById('healthBox');
   box.innerHTML='<div class="empty">בודק…</div>';
   document.getElementById('healthTime').textContent='';
   const cards=[];
+  TECH_REPORT={generated:new Date().toISOString(), app_lines:document.documentElement.outerHTML.split('\n').length,
+    ua:navigator.userAgent.slice(0,80), connected:GH.ok(), repo:GH.owner+'/'+GH.repo+'@'+GH.branch,
+    files:{}, findings:null, actions_runs:null, client_log:CLIENT_LOG.slice(0,15).map(l=>({t:l.t.toISOString(),level:l.level,msg:l.msg}))};
 
   /* --- 1. חיבור --- */
   if(!GH.ok()){
@@ -845,8 +859,10 @@ async function runDiagnostics(){
                'sprint.json':'ספרינט','zones.json':'גזרות','seen_email.json':'זיכרון מייל','seen.json':'זיכרון RSS'};
   const got={};
   for(const [f,label] of Object.entries(files)){
-    try{ const r=await GH.read(f); got[f]=r.data; }
+    try{ const r=await GH.read(f); got[f]=r.data;
+      TECH_REPORT.files[f]={ok:true, size:Array.isArray(r.data)?r.data.length:(r.data?Object.keys(r.data).length:0)}; }
     catch(e){ got[f]=undefined;
+      TECH_REPORT.files[f]={ok:false, error:String(e.message)};
       if(f==='zones.json'||f==='seen.json') continue; // אופציונליים
       cards.push(hCard(f==='seen_email.json'?'warn':'err', label+' — לא נקרא ('+f+')',
         f==='seen_email.json'
@@ -860,6 +876,10 @@ async function runDiagnostics(){
   const F=got['findings.json'];
   if(F){
     const passed=F.filter(x=>x.passed).length, filtered=F.length-passed;
+    const _reasons={}; F.forEach(x=>{ if(!x.passed) _reasons[x.reason]=(_reasons[x.reason]||0)+1; });
+    TECH_REPORT.findings={total:F.length, passed:passed, filtered:filtered, reasons:_reasons,
+      last_ts:F.length?new Date(Math.max(...F.map(x=>x.ts||0))*1000).toISOString():null,
+      items:F.slice(0,20).map(x=>({source:x.source,title:(x.title||'').slice(0,60),price:x.price,passed:x.passed,reason:x.reason}))};
     const lastTs=F.length?Math.max(...F.map(x=>x.ts||0)):0;
     const ageH=lastTs?((Date.now()/1000-lastTs)/3600):null;
     if(!F.length)
@@ -889,6 +909,7 @@ async function runDiagnostics(){
     const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/actions/runs?per_page=5`,{headers:GH.hdrs()});
     if(r.ok){
       const runs=(await r.json()).workflow_runs.filter(w=>w.name==='land-watch').slice(0,3);
+      TECH_REPORT.actions_runs=runs.map(w=>({at:w.created_at, event:w.event, conclusion:w.conclusion}));
       if(runs.length){
         const bad=runs.filter(w=>w.conclusion==='failure').length;
         const last=runs[0];
