@@ -3,7 +3,7 @@
   "id": "l1783794306896",
   "title": "מושבה מצפה סמוך לכביש 7717",
   "ptype": "plot",
-  "town": "מצפה",
+  "town": "מצפה - טבריה",
   "price": 490000,
   "link": "https://www.facebook.com/share/p/18ZMskEFNg/?mibextid=wwXIfr",
   "dunam": 1,
@@ -11,6 +11,11 @@
   "note": "",
   "status": "new",
   "by": "ניתאי",
-  "at": 1783794343529
+  "at": 1783796403145,
+  "lat": 32.79548197687171,
+  "lng": 35.51467895507813,
+  "sqm": null,
+  "rooms": null,
+  "cond": ""
  }
 ]
