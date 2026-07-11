@@ -278,6 +278,11 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
       <label>יישוב (למפה 🗺️)</label>
       <input type="text" id="leadTown" placeholder="יסוד המעלה" list="townList">
       <datalist id="townList"></datalist>
+      <div class="row" style="margin-top:6px">
+        <button type="button" class="btn sm" onclick="startPinMode()">📌 דקור מיקום מדויק על המפה</button>
+        <span class="muted" id="pinLabel" style="font-size:12px"></span>
+        <button type="button" class="btn sm" id="pinClear" style="display:none;color:var(--clay)" onclick="clearPin()">✖</button>
+      </div>
       <div class="row">
         <div style="flex:1"><label>מחיר ₪</label><input type="number" id="leadPrice" placeholder="380000"></div>
         <div style="flex:1"><label>שטח מגרש (דונם)</label><input type="number" step="0.1" id="leadDunam" placeholder="1.0"></div>
@@ -457,7 +462,7 @@ const store = {
 const GH = {
   owner: store.get('gh.owner')||'', repo: store.get('gh.repo')||'',
   branch: store.get('gh.branch')||'main', token: store.get('gh.token')||'',
-  ok(){ return this.owner && this.repo && this.token; },
+  ok(){ return !!(this.owner && this.repo && this.token); },
   hdrs(){ return {Authorization:'Bearer '+this.token, Accept:'application/vnd.github+json'}; },
   async read(path){
     const r = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}?ref=${this.branch}&t=${Date.now()}`,
@@ -547,7 +552,7 @@ function leadFromPlace(){
              : nearestTown({lat:LAST_PLACE.c[0], lng:LAST_PLACE.c[1]});
   document.getElementById('leadTown').value = near || '';
   document.getElementById('leadTitle').value = LAST_PLACE.label;
-  go('crm');
+  openTab('crm');
   toast('מלא פרטים ושמור — ' + LAST_PLACE.label);
   setTimeout(()=>document.getElementById('leadPrice').focus(), 350);
 }
@@ -681,10 +686,11 @@ function nearestTown(latlng){
   return bestD<0.09 ? best : '';   // עד ~9 ק"מ
 }
 function longPressAdd(e){
-  if(DRAWING || MEASURING || DISTING) return;
+  if(DRAWING || MEASURING || DISTING || PINNING) return;
   const town=nearestTown(e.latlng);
+  PIN_LAT=e.latlng.lat; PIN_LNG=e.latlng.lng; setPinLabel();
   document.getElementById('leadTown').value=town;
-  go('crm');
+  openTab('crm');
   toast(town ? ('ליד חדש ליד '+town+' — מלא פרטים') : 'ליד חדש — מלא פרטים');
   setTimeout(()=>document.getElementById('leadTitle').focus(), 350);
 }
@@ -789,6 +795,14 @@ function toggleDraw(){
   toast('הקש על המפה כדי לסמן את קודקודי הגזרה');
 }
 function drawClick(e){
+  if(PINNING){
+    PIN_LAT=e.latlng.lat; PIN_LNG=e.latlng.lng; PINNING=false;
+    if(!document.getElementById('leadTown').value.trim())
+      document.getElementById('leadTown').value=nearestTown(e.latlng)||'';
+    openTab('crm'); setPinLabel();
+    toast('📌 המיקום נקלט — השלם פרטים ושמור');
+    return;
+  }
   if(DISTING){ distClick(e.latlng); return; }
   if(MEASURING){ measureClick(e.latlng); return; }
   if(!DRAWING) return;
@@ -852,42 +866,27 @@ function toggleNav(){
   }
 }
 
-function go(t){
-  if(t==='map'){
-    toggleNav(); // מפעיל את הסגירה החכמה
-    return;
-  }
-  
-  // 1. סוגרים את הסרגל כדי שלא יסתיר את החלון החדש
-  document.body.classList.remove('nav-open');
-  // 2. משאירים את הלחצן על ✕ כדי שאפשר יהיה לסגור דרכו את החלון
-  document.getElementById('navToggle').textContent = '✕';
-
-  // 3. אם החלון המבוקש כבר פתוח - סגור אותו וחזור למפה
-  const targetTab = document.getElementById('tab-'+t);
-  if (targetTab && targetTab.classList.contains('on')) {
-     toggleNav(); 
-     return;
-  }
-
-  // 4. פתיחת החלון המבוקש
+function openTab(t){   // פתיחה ישירה של מגירה, בלי לוגיקת "סגור אם פתוח"
+  document.body.classList.add('nav-open');   // הסרגל נשאר גלוי לצד המגירה
+  document.getElementById('navToggle').textContent='✕';
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on', x.id==='tab-'+t));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='sheet') renderSheet();
   if(t==='health') runDiagnostics();
 }
-/* ---------- 🩺 מצב מערכת ---------- */
-function hCard(status,title,body){
-  const icon = status==='ok'?'✅':(status==='warn'?'⚠️':'❌');
-  const border = status==='ok'?'var(--olive-b)':(status==='warn'?'var(--gold)':'var(--clay)');
-  return `<div class="card" style="border-color:${border}">
-    <b>${icon} ${title}</b>
-    <div class="muted" style="margin-top:6px;font-size:13px;line-height:1.6">${body}</div></div>`;
+function go(t){
+  if(t==='map'){ toggleNav(); return; }
+  const targetTab=document.getElementById('tab-'+t);
+  if(targetTab && targetTab.classList.contains('on')){ toggleNav(); return; }  // לחיצה חוזרת = סגירה
+  openTab(t);
 }
+
 let TECH_REPORT=null;
 async function copyTechReport(){
   if(!TECH_REPORT){ toast('הרץ בדיקה קודם 🔄'); return; }
-  const txt='```json\n'+JSON.stringify(TECH_REPORT,null,1)+'\n```';
+  let _j=JSON.stringify(TECH_REPORT,null,1);
+  if(GH.token) _j=_j.split(GH.token).join('***TOKEN***');   // ביטחון: שום סוד לא יוצא בדוח
+  const txt='```json\n'+_j+'\n```';
   try{ await navigator.clipboard.writeText(txt); toast('הדוח הועתק — הדבק בצ׳אט לקלוד 📋'); }
   catch(e){ // iOS fallback
     const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
@@ -901,7 +900,7 @@ async function runDiagnostics(){
   document.getElementById('healthTime').textContent='';
   const cards=[];
   TECH_REPORT={generated:new Date().toISOString(), app_lines:document.documentElement.outerHTML.split('\n').length,
-    ua:navigator.userAgent.slice(0,80), connected:GH.ok(), repo:GH.owner+'/'+GH.repo+'@'+GH.branch,
+    ua:navigator.userAgent.slice(0,80), connected:!!GH.ok(), repo:GH.owner+'/'+GH.repo+'@'+GH.branch,
     files:{}, findings:null, actions_runs:null, client_log:CLIENT_LOG.slice(0,15).map(l=>({t:l.t.toISOString(),level:l.level,msg:l.msg}))};
 
   /* --- 1. חיבור --- */
@@ -1076,11 +1075,15 @@ function renderMap(){
   MAP_LAYER.clearLayers();
   const pts=[]; const townCount={}; let inZoneCount=0;
   CRM.forEach(l=>{
-    const base = townCoords(l.town);
+    const pinned = (l.lat!=null && l.lng!=null);
+    const base = pinned ? [l.lat, l.lng] : townCoords(l.town);
     if(!base){ if(l.town) missing.push(l.town); return; }
-    // פיזור קטן כשיש כמה לידים באותו יישוב — שלא יסתירו זה את זה
-    const n = townCount[l.town]=(townCount[l.town]||0)+1;
-    const c = n===1 ? base : [base[0]+0.004*Math.cos(n*2.4), base[1]+0.005*Math.sin(n*2.4)];
+    // פיזור קטן רק ללידים על מרכז יישוב — דקורים יושבים בדיוק במקומם
+    let c=base;
+    if(!pinned){
+      const n = townCount[l.town]=(townCount[l.town]||0)+1;
+      c = n===1 ? base : [base[0]+0.004*Math.cos(n*2.4), base[1]+0.005*Math.sin(n*2.4)];
+    }
     const urgent = l.price && PROFILE && l.price < (PROFILE.urgent_below||0);
     const inZone = ZONES.length && inAnyZone(c);
     if(inZone) inZoneCount++;
@@ -1103,7 +1106,7 @@ function renderMap(){
       : '';
     m.bindPopup(`<div dir="rtl" style="font-family:Assistant,sans-serif;min-width:180px">
       <b>${l.ptype==='house'?'🏠':'🏞️'} ${esc(l.title)}</b><br>
-      ${l.town?('📍 '+esc(l.town)+'<br>'):''}
+      ${l.town?('📍 '+esc(l.town)+((l.lat!=null)?' <span style=\"font-size:11px\">📌 מדויק</span>':'')+'<br>'):''}
       ${l.price?('💰 ₪'+fmt(l.price)+'<br>'):''}
       ${house?(house+'<br>'):''}
       ${l.dunam?('🏞️ '+l.dunam+' דונם<br>'):''}
@@ -1138,7 +1141,7 @@ function fillTownList(){
 }
 fillTownList();
 function wazeUrl(l){
-  const c=townCoords(l.town);
+  const c=(l.lat!=null && l.lng!=null) ? [l.lat,l.lng] : townCoords(l.town);
   if(!c) return null;
   // קישור רשמי של Waze: פותח את האפליקציה אם מותקנת, אחרת דפדפן
   return `https://waze.com/ul?ll=${c[0]},${c[1]}&navigate=yes`;
@@ -1213,9 +1216,23 @@ function leadFromFeed(id){
   for(const k in TOWNS){ if((f.title||'').includes(k)){ town=k; break; } }
   CRM.unshift({id:'l'+Date.now(), title:f.title, town:town, price:f.price||null, link:f.link||'',
     status:'new', by:WHO(), at:Date.now()});
-  pushCRM('lead from feed'); go('crm');
+  pushCRM('lead from feed'); openTab('crm');
 }
 let PTYPE='plot', EDIT_ID=null;
+let PIN_LAT=null, PIN_LNG=null, PINNING=false;
+function setPinLabel(){
+  const el=document.getElementById('pinLabel'), cl=document.getElementById('pinClear');
+  if(PIN_LAT!=null){ el.textContent='📌 '+PIN_LAT.toFixed(5)+', '+PIN_LNG.toFixed(5); cl.style.display=''; }
+  else{ el.textContent=''; cl.style.display='none'; }
+}
+function clearPin(){ PIN_LAT=null; PIN_LNG=null; setPinLabel(); }
+function startPinMode(){
+  PINNING=true;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.body.classList.remove('nav-open');
+  document.getElementById('navToggle').textContent='☰';
+  toast('📌 הקש על המפה במיקום המדויק של הנכס');
+}
 function setPtype(t){
   PTYPE=t;
   document.querySelectorAll('.ptype').forEach(b=>b.classList.toggle('on',b.dataset.pt===t));
@@ -1224,7 +1241,7 @@ function setPtype(t){
 function clearLeadForm(){
   ['leadTitle','leadTown','leadPrice','leadLink','leadDunam','leadPhone','leadNote','leadSqm','leadRooms'].forEach(i=>{const e=document.getElementById(i); if(e) e.value='';});
   document.getElementById('leadCond').value='';
-  EDIT_ID=null; setPtype('plot');
+  EDIT_ID=null; setPtype('plot'); clearPin();
   document.getElementById('leadFormTitle').textContent='➕ ליד חדש';
   document.getElementById('addLeadBtn').textContent='+ הוסף ליד';
   document.getElementById('cancelEditBtn').style.display='none';
@@ -1243,10 +1260,11 @@ function editLead(id){
   document.getElementById('leadSqm').value=l.sqm||'';
   document.getElementById('leadRooms').value=l.rooms||'';
   document.getElementById('leadCond').value=l.cond||'';
+  PIN_LAT=(l.lat!=null)?l.lat:null; PIN_LNG=(l.lng!=null)?l.lng:null; setPinLabel();
   document.getElementById('leadFormTitle').textContent='✏️ עריכת ליד';
   document.getElementById('addLeadBtn').textContent='💾 שמור שינויים';
   document.getElementById('cancelEditBtn').style.display='';
-  go('crm');
+  openTab('crm');
   document.getElementById('tab-crm').scrollTop=0;
 }
 function addLead(){
@@ -1257,7 +1275,8 @@ function addLead(){
     link:document.getElementById('leadLink').value.trim(),
     dunam:Number(document.getElementById('leadDunam').value)||null,
     phone:document.getElementById('leadPhone').value.trim(),
-    note:document.getElementById('leadNote').value.trim()};
+    note:document.getElementById('leadNote').value.trim(),
+    lat:PIN_LAT, lng:PIN_LNG};
   if(PTYPE==='house'){
     vals.sqm=Number(document.getElementById('leadSqm').value)||null;
     vals.rooms=Number(document.getElementById('leadRooms').value)||null;
