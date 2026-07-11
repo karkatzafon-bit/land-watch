@@ -1255,6 +1255,8 @@ async function loadCRM(){
   if(!GH.ok()) return;
   try{ const r=await GH.read('crm.json'); CRM=r.data||[]; CRM_SHA=r.sha; }catch(e){}
   renderCRM(); renderBell();
+  if(!window.__remToasted){ const d=dueReminders();
+    if(d.length){ toast('⏰ '+d.length+' תזכורות ממתינות בפעמון'); window.__remToasted=true; } }
 }
 async function pushCRM(msg){
   try{ CRM_SHA = await GH.write('crm.json', CRM, CRM_SHA, msg); toast('נשמר ✓'); }
@@ -1295,6 +1297,7 @@ function clearLeadForm(){
   ['leadTitle','leadTown','leadPrice','leadLink','leadDunam','leadPhone','leadNote','leadSqm','leadRooms'].forEach(i=>{const e=document.getElementById(i); if(e) e.value='';});
   document.getElementById('leadCond').value='';
   EDIT_ID=null; setPtype('plot'); clearPin();
+  document.getElementById('leadDue').value='';
   document.getElementById('leadFormTitle').textContent='➕ ליד חדש';
   document.getElementById('addLeadBtn').textContent='+ הוסף ליד';
   document.getElementById('cancelEditBtn').style.display='none';
@@ -1314,6 +1317,7 @@ function editLead(id){
   document.getElementById('leadRooms').value=l.rooms||'';
   document.getElementById('leadCond').value=l.cond||'';
   PIN_LAT=(l.lat!=null)?l.lat:null; PIN_LNG=(l.lng!=null)?l.lng:null; setPinLabel();
+  document.getElementById('leadDue').value = l.due? new Date(l.due).toISOString().slice(0,10) : '';
   document.getElementById('leadFormTitle').textContent='✏️ עריכת ליד';
   document.getElementById('addLeadBtn').textContent='💾 שמור שינויים';
   document.getElementById('cancelEditBtn').style.display='';
@@ -1329,6 +1333,8 @@ function addLead(){
     dunam:Number(document.getElementById('leadDunam').value)||null,
     phone:document.getElementById('leadPhone').value.trim(),
     note:document.getElementById('leadNote').value.trim(),
+    due:(function(){const v=document.getElementById('leadDue').value;
+        return v? new Date(v+'T09:00:00').getTime() : null;})(),
     lat:PIN_LAT, lng:PIN_LNG};
   if(PTYPE==='house'){
     vals.sqm=Number(document.getElementById('leadSqm').value)||null;
@@ -1377,6 +1383,7 @@ function renderCRM(){
       <div class="fmeta"><span class="tag web">${pt}</span>${l.town?`<span>📍 ${esc(l.town)}</span>`:''}${l.price?`<span class="price">₪${fmt(l.price)}</span>`:''}
         ${l.dunam?`<span>🏞️ ${l.dunam} דונם</span>`:''}${house}
         <span class="badge">עודכן: ${new Date(l.at).toLocaleDateString('he-IL')}${l.by?' · '+esc(l.by):''}</span></div>
+      ${l.due?`<div style="margin:-4px 0 10px;font-size:13px;font-weight:700;color:${l.due<Date.now()?'var(--clay)':'var(--ink-soft)'}">⏰ ${l.due<Date.now()?'עבר הזמן! ':''}${new Date(l.due).toLocaleDateString('he-IL')}</div>`:''}
       ${l.note?`<div class="muted" style="margin:-4px 0 10px">📝 ${esc(l.note)}</div>`:''}
       ${(l.log&&l.log.length)?`<div class="leadlog">${l.log.slice(0,4).map(e=>{
         const s=(STATUSES.find(x=>x[0]===e.st)||['','?'])[1];
@@ -1549,6 +1556,21 @@ function flyToLead(id){
   setTimeout(()=>{ const m=LEAD_MARKERS[id]; if(m) m.openPopup(); }, 1250);
 }
 
+/* ---------- ⏰ תזכורות לידים ---------- */
+function dueReminders(){
+  const now=Date.now(), soon=now+48*3600*1000;
+  return CRM.filter(l=>l.due && l.due<=soon)
+    .map(l=>({lead:l, overdue: l.due<now}))
+    .sort((a,b)=>a.lead.due-b.lead.due);
+}
+function reminderDone(id){
+  const l=CRM.find(x=>x.id===id); if(!l) return;
+  l.due=null; l.by=WHO(); l.at=Date.now();
+  if(!l.log) l.log=[];
+  l.log.unshift({st:l.status, note:'⏰ תזכורת טופלה', by:WHO(), at:Date.now()});
+  pushCRM('reminder done'); openNotifs(); renderBell();
+}
+
 /* ---------- 🔔 עדכונים מהשותף (בתוך האתר) ---------- */
 let NOTIF_SEEN = Number(store.get('notif.seen'))||0;
 let LAST_TOASTED = Date.now();
@@ -1560,7 +1582,7 @@ function partnerNotifs(){
     .sort((a,b)=>b.at-a.at);
 }
 function renderBell(){
-  const n=partnerNotifs().length;
+  const n=partnerNotifs().length + dueReminders().length;
   const b=document.getElementById('bellBadge');
   b.textContent=n>9?'9+':n;
   b.classList.toggle('show', n>0);
@@ -1568,7 +1590,19 @@ function renderBell(){
 function openNotifs(){
   const items=partnerNotifs();
   const box=document.getElementById('notifList');
-  box.innerHTML = items.length ? items.map(x=>{
+  const rem=dueReminders();
+  const remHtml = rem.length ? '<div style="font-weight:800;margin:2px 0 4px">⏰ תזכורות</div>'+rem.map(x=>{
+    const l=x.lead;
+    const d=new Date(l.due).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+    return `<div class="notif-item" style="${x.overdue?'background:#FBEAE5;border-radius:10px;padding-inline:8px':''}">
+      ${x.overdue?'🔴 <b>עבר הזמן!</b>':'🟡 מתקרב:'} <b>${l.ptype==='house'?'🏠':'🏞️'} ${esc(l.title)}</b>
+      ${l.town?(' · 📍 '+esc(l.town)):''} · ⏰ ${d}<br>
+      <a href="#" onclick="reminderDone(${JSON.stringify(l.id)});return false">✓ טופל</a> ·
+      <a href="#" onclick="closeNotifs();flyToLead(${JSON.stringify(l.id)});return false">🗺️ במפה</a> ·
+      <a href="#" onclick="closeNotifs();editLead(${JSON.stringify(l.id)});return false">✏️ פתח</a>
+    </div>`;
+  }).join('')+(items.length?'<div style="font-weight:800;margin:10px 0 4px">🔄 עדכוני שותף</div>':'') : '';
+  box.innerHTML = remHtml + (items.length ? items.map(x=>{
     const l=x.lead;
     const st=(STATUSES.find(s=>s[0]===l.status)||STATUSES[0])[1];
     const note=(l.log&&l.log[0]&&l.log[0].note)?('<br>📝 '+esc(l.log[0].note)):'';
@@ -1581,7 +1615,7 @@ function openNotifs(){
       <a href="#" onclick="closeNotifs();flyToLead(${JSON.stringify(l.id)});return false">🗺️ במפה</a> ·
       <a href="#" onclick="closeNotifs();editLead(${JSON.stringify(l.id)});return false">✏️ פתח ליד</a>
     </div>`;
-  }).join('') : '<div class="empty">אין עדכונים חדשים מהשותף 🌱</div>';
+  }).join('') : (rem.length?'':'<div class="empty">אין תזכורות ואין עדכונים 🌱</div>'));
   document.getElementById('notifPanel').style.display='flex';
 }
 function closeNotifs(){ document.getElementById('notifPanel').style.display='none'; }
@@ -1605,6 +1639,45 @@ async function pollCRM(){
   }catch(e){}
 }
 setInterval(pollCRM, 90000);
+
+/* ---------- 🔄 עדכון אוטומטי (בסגנון Vercel) ---------- */
+let SITE_SHA=null, UPDATE_PENDING=false;
+async function fetchSiteSha(){
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/commits?path=index.html&per_page=1&sha=${GH.branch}`,
+      {headers: GH.token?GH.hdrs():{}, cache:'no-store'});
+    if(!r.ok) return null;
+    const j=await r.json();
+    return (j[0]&&j[0].sha)||null;
+  }catch(e){ return null; }
+}
+function busyNow(){   // לא מרעננים באמצע עבודה
+  const drawerOpen=!!document.querySelector('.tab.on');
+  const typing=['leadTitle','leadPrice','leadNote','leadPhone','leadLink','leadTown']
+    .some(i=>{const e=document.getElementById(i); return e&&e.value.trim();});
+  return drawerOpen||typing||DRAWING||MEASURING||DISTING||PINNING;
+}
+function applyUpdate(){
+  // רענון עם חותמת גרסה — עוקף כל מטמון (הטריק של Vercel)
+  location.replace(location.pathname+'?v='+Date.now().toString(36));
+}
+async function checkUpdate(){
+  if(!GH.owner||!GH.repo) return;
+  const sha=await fetchSiteSha();
+  if(!sha) return;
+  if(SITE_SHA===null){ SITE_SHA=sha; return; }   // קיבוע גרסת הטעינה
+  if(sha!==SITE_SHA && !UPDATE_PENDING){
+    UPDATE_PENDING=true;
+    toast('🔄 גרסה חדשה של האתר זוהתה — מתעדכן עוד רגע…');
+    // ממתינים ~100 שנ׳ שה-Pages יסיים לפרוס, ואז מרעננים ברגע שקט
+    setTimeout(function tryApply(){
+      if(busyNow()){ setTimeout(tryApply, 20000); toast('🔄 עדכון ממתין — יותקן כשתחזור למפה'); return; }
+      applyUpdate();
+    }, 100000);
+  }
+}
+setInterval(checkUpdate, 180000);   // בדיקה כל 3 דקות
+setTimeout(checkUpdate, 5000);      // וקיבוע גרסה מיד אחרי הטעינה
 
 consumeInvite();
 boot();
