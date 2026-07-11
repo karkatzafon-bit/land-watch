@@ -401,6 +401,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
         <button class="btn p" onclick="saveSetup()">💾 שמור והתחבר</button>
         <span id="connState" class="muted"></span>
       </div>
+      <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px" class="row">
+        <button class="btn sm" onclick="makeInvite()">📤 צור קישור הזמנה לשותף</button>
+        <span class="muted" style="font-size:12px">קישור שמחבר אותו בלחיצה — לשלוח בערוץ פרטי בלבד ולמחוק אחרי!</span>
+      </div>
     </div>
   </div>
 
@@ -459,8 +463,21 @@ const store = {
 };
 
 /* ---------- GitHub API ---------- */
+/* זיהוי אוטומטי של הריפו מכתובת האתר (username.github.io/repo) */
+function autoRepo(){
+  try{
+    const host=location.hostname, path=location.pathname;
+    if(host.endsWith('.github.io')){
+      const owner=host.split('.')[0];
+      const repo=(path.split('/').filter(Boolean)[0])||'';
+      if(owner && repo) return {owner, repo};
+    }
+  }catch(e){}
+  return null;
+}
+const AUTO = autoRepo();
 const GH = {
-  owner: store.get('gh.owner')||'', repo: store.get('gh.repo')||'',
+  owner: store.get('gh.owner')||(AUTO?AUTO.owner:''), repo: store.get('gh.repo')||(AUTO?AUTO.repo:''),
   branch: store.get('gh.branch')||'main', token: store.get('gh.token')||'',
   ok(){ return !!(this.owner && this.repo && this.token); },
   hdrs(){ return {Authorization:'Bearer '+this.token, Accept:'application/vnd.github+json'}; },
@@ -881,6 +898,14 @@ function go(t){
   openTab(t);
 }
 
+/* ---------- 🩺 מצב מערכת ---------- */
+function hCard(status,title,body){
+  const icon = status==='ok'?'✅':(status==='warn'?'⚠️':'❌');
+  const border = status==='ok'?'var(--olive-b)':(status==='warn'?'var(--gold)':'var(--clay)');
+  return `<div class="card" style="border-color:${border}">
+    <b>${icon} ${title}</b>
+    <div class="muted" style="margin-top:6px;font-size:13px;line-height:1.6">${body}</div></div>`;
+}
 let TECH_REPORT=null;
 async function copyTechReport(){
   if(!TECH_REPORT){ toast('הרץ בדיקה קודם 🔄'); return; }
@@ -1455,6 +1480,31 @@ async function boot(fromSave){
   await loadFeed();
   renderMap();   // המפה היא מסך הבית — מציירים אותה מיד עם הנתונים
 }
+function makeInvite(){
+  if(!GH.ok()){ toast('התחבר קודם בעצמך'); return; }
+  const payload=btoa(unescape(encodeURIComponent(JSON.stringify(
+    {o:GH.owner, r:GH.repo, b:GH.branch, t:GH.token}))));
+  const url=location.origin+location.pathname+'#invite='+payload;
+  const done=()=>toast('קישור ההזמנה הועתק 📤 — שלח בפרטי ומחק אחרי!');
+  try{ navigator.clipboard.writeText(url).then(done); }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=url;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+}
+function consumeInvite(){
+  if(!location.hash.startsWith('#invite=')) return false;
+  try{
+    const j=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(8)))));
+    GH.owner=j.o; GH.repo=j.r; GH.branch=j.b||'main'; GH.token=j.t;
+    store.set('gh.owner',GH.owner); store.set('gh.repo',GH.repo);
+    store.set('gh.branch',GH.branch); store.set('gh.token',GH.token);
+    history.replaceState(null,'',location.pathname);   // מוחק את הסוד מהכתובת מיד
+    toast('🤝 התחברת דרך הזמנה! הזן את שמך בהגדרות');
+    setTimeout(()=>{ openTab('setup');
+      const w=document.getElementById('whoAmI'); if(w) w.focus(); }, 600);
+    return true;
+  }catch(e){ toast('קישור הזמנה לא תקין'); return false; }
+}
+consumeInvite();
 boot();
 renderMap();   // המפה עולה מיד — היא הרקע של הכל, גם לפני חיבור
 </script>
