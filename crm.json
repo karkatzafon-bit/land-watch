@@ -1,5 +1,24 @@
 [
  {
+  "id": "l1783799755297",
+  "status": "new",
+  "by": "ניתאי",
+  "at": 1783799755298,
+  "title": "מכרז רמ״י בנייה נמוכה - הגשה עד 20/7",
+  "ptype": "plot",
+  "town": "מגדל",
+  "price": null,
+  "link": "https://apps.land.gov.il/MichrazimSite/#/michraz/20250467",
+  "dunam": 390,
+  "phone": "",
+  "note": "",
+  "lat": 32.83767975204096,
+  "lng": 35.50971686840058,
+  "sqm": null,
+  "rooms": null,
+  "cond": ""
+ },
+ {
   "id": "l1783794306896",
   "title": "מושבה מצפה סמוך לכביש 7717",
   "ptype": "plot",
