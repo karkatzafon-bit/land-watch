@@ -46,6 +46,20 @@ body:not(.nav-open) nav{transform:translateX(100%)}
   font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.22);
   display:flex;align-items:center;justify-content:center;transition:right .25s ease}
 body.nav-open #navToggle{right:70px}
+#bellBtn{position:fixed;top:64px;right:10px;z-index:710;width:44px;height:44px;
+  border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.97);
+  font-size:19px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.22);
+  display:flex;align-items:center;justify-content:center;transition:right .25s ease}
+body.nav-open #bellBtn{right:70px}
+#bellBadge{position:absolute;top:-4px;left:-4px;min-width:19px;height:19px;border-radius:999px;
+  background:var(--clay);color:#fff;font-size:11px;font-weight:800;font-family:"Assistant";
+  display:none;align-items:center;justify-content:center;padding:0 5px;
+  box-shadow:0 2px 6px rgba(0,0,0,.3)}
+#bellBadge.show{display:flex}
+.notif-item{border-bottom:1px dashed var(--line);padding:10px 2px;font-size:14px;line-height:1.5}
+.notif-item:last-child{border-bottom:0}
+.notif-item .nwho{font-weight:800;color:var(--olive-deep)}
+.notif-item .ntime{font-size:11.5px;color:var(--ink-soft)}
 nav button{border:0;background:none;padding:9px 2px;font-family:"Assistant";
   font-size:10px;font-weight:700;color:var(--ink-soft);cursor:pointer;position:relative;
   transition:color .15s}
@@ -433,6 +447,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 </main>
 
 <button id="navToggle" onclick="toggleNav()" title="תפריט" aria-label="תפריט">☰</button>
+<button id="bellBtn" onclick="openNotifs()" title="עדכונים מהשותף" aria-label="עדכונים">🔔<span id="bellBadge"></span></button>
 
 <nav>
   <button class="on" data-tab="map" onclick="go('map')"><span class="ico">🗺️</span>מפה</button>
@@ -445,6 +460,19 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   <button data-tab="health" onclick="go('health')"><span class="ico">🩺</span>מצב</button>
   <button data-tab="setup" onclick="go('setup')"><span class="ico">🔧</span>הגדרות</button>
 </nav>
+
+<!-- 🔔 עדכונים מהשותף -->
+<div id="notifPanel" style="display:none;position:fixed;inset:0;z-index:790;background:rgba(30,41,31,.45);
+  align-items:center;justify-content:center;backdrop-filter:blur(3px)" onclick="if(event.target===this)closeNotifs()">
+  <div class="card" style="width:min(420px,92vw);margin:0;max-height:78vh;display:flex;flex-direction:column">
+    <b style="margin-bottom:6px">🔔 עדכונים מהשותף</b>
+    <div id="notifList" style="overflow-y:auto;flex:1"></div>
+    <div class="row" style="margin-top:12px;justify-content:space-between">
+      <button class="btn sm p" onclick="markNotifsRead()">✓ סמן הכל כנקרא</button>
+      <button class="btn sm" onclick="closeNotifs()">סגור</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1052,7 +1080,7 @@ function renderSheet(){
     return `<tr class="${urgent?'urgent-row':''}">
       <td>${sheetVal(l,'type')}</td>
       <td>${l.link?`<a href="${escAttr(l.link)}" target="_blank" rel="noopener"><b>${esc(l.title)}</b></a>`:`<b>${esc(l.title)}</b>`}${urgent?' 🔴':''}</td>
-      <td>${esc(l.town||'—')}</td>
+      <td>${l.town?`<a href="#" onclick='flyToLead(${JSON.stringify(l.id)});return false'>📍 ${esc(l.town)}</a>`:'—'}</td>
       <td>${l.price?fmt(l.price):'—'}</td>
       <td>${l.dunam||'—'}</td>
       <td>${l.sqm||'—'}</td>
@@ -1097,7 +1125,7 @@ function renderMap(){
     `<span class="pill" style="border-color:${z.color};color:${z.color};font-weight:800">
       ⬠ ${esc(z.name)}<button onclick="delZone(${i})">×</button></span>`).join('');
 
-  MAP_LAYER.clearLayers();
+  MAP_LAYER.clearLayers(); LEAD_MARKERS={};
   const pts=[]; const townCount={}; let inZoneCount=0;
   CRM.forEach(l=>{
     const pinned = (l.lat!=null && l.lng!=null);
@@ -1142,7 +1170,7 @@ function renderMap(){
       ${wazeUrl(l)?('<a href="'+wazeUrl(l)+'" target="_blank" rel="noopener" style="color:#05a8d7;font-weight:800">🚗 נווט בוויז</a> · '):''}
       ${l.link?('<a href="'+escAttr(l.link)+'" target="_blank" rel="noopener">פתח מודעה ↗</a>'):''}
     </div>`);
-    m.addTo(MAP_LAYER); pts.push(c);
+    m.addTo(MAP_LAYER); LEAD_MARKERS[l.id]=m; pts.push(c);
   });
   if(pts.length && !DRAWING && !FIT_DONE){ MAP.fitBounds(L.latLngBounds(pts).pad(0.35)); FIT_DONE=true; }
   document.getElementById('zoneStats').textContent =
@@ -1226,7 +1254,7 @@ function escAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
 async function loadCRM(){
   if(!GH.ok()) return;
   try{ const r=await GH.read('crm.json'); CRM=r.data||[]; CRM_SHA=r.sha; }catch(e){}
-  renderCRM();
+  renderCRM(); renderBell();
 }
 async function pushCRM(msg){
   try{ CRM_SHA = await GH.write('crm.json', CRM, CRM_SHA, msg); toast('נשמר ✓'); }
@@ -1358,6 +1386,7 @@ function renderCRM(){
         <select class="statuspick ${st[2]}" onchange='setStatus(${JSON.stringify(l.id)}, this.value)'>
           ${STATUSES.map(s=>`<option value="${s[0]}" ${s[0]===l.status?'selected':''}>${s[1]}</option>`).join('')}
         </select>
+        <button class="btn sm" onclick='flyToLead(${JSON.stringify(l.id)})'>🗺️ במפה</button>
         <button class="btn sm" onclick='editLead(${JSON.stringify(l.id)})'>✏️ ערוך</button>
         ${wazeUrl(l)?`<a class="btn sm" href="${wazeUrl(l)}" target="_blank" rel="noopener" style="color:#05c8f7;font-weight:800">🚗 Waze</a>`:''}
         ${tel?`<a class="btn sm" href="tel:${tel}">📞 חיוג</a>`:''}
@@ -1504,6 +1533,79 @@ function consumeInvite(){
     return true;
   }catch(e){ toast('קישור הזמנה לא תקין'); return false; }
 }
+/* ---------- 🗺️ קפיצה לליד במפה ---------- */
+let LEAD_MARKERS={};   // id → marker (נבנה ב-renderMap)
+function flyToLead(id){
+  const l=CRM.find(x=>x.id===id); if(!l) return;
+  const c=(l.lat!=null && l.lng!=null) ? [l.lat,l.lng] : townCoords(l.town);
+  if(!c){ toast('לליד אין מיקום — הוסף יישוב או 📌 דקור אותו'); return; }
+  // סוגרים הכל וחוזרים למפה
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.body.classList.remove('nav-open');
+  document.getElementById('navToggle').textContent='☰';
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab==='map'));
+  renderMap();
+  MAP.flyTo(c, (l.lat!=null)?17:15, {duration:1.1});
+  setTimeout(()=>{ const m=LEAD_MARKERS[id]; if(m) m.openPopup(); }, 1250);
+}
+
+/* ---------- 🔔 עדכונים מהשותף (בתוך האתר) ---------- */
+let NOTIF_SEEN = Number(store.get('notif.seen'))||0;
+let LAST_TOASTED = Date.now();
+function leadCreatedAt(l){ const n=parseInt(String(l.id||'').slice(1)); return isNaN(n)?0:n; }
+function partnerNotifs(){
+  const me=WHO();
+  return CRM.filter(l=> l.by && l.by!==me && (l.at||0)>NOTIF_SEEN)
+    .map(l=>({lead:l, at:l.at, isNew: leadCreatedAt(l)>NOTIF_SEEN}))
+    .sort((a,b)=>b.at-a.at);
+}
+function renderBell(){
+  const n=partnerNotifs().length;
+  const b=document.getElementById('bellBadge');
+  b.textContent=n>9?'9+':n;
+  b.classList.toggle('show', n>0);
+}
+function openNotifs(){
+  const items=partnerNotifs();
+  const box=document.getElementById('notifList');
+  box.innerHTML = items.length ? items.map(x=>{
+    const l=x.lead;
+    const st=(STATUSES.find(s=>s[0]===l.status)||STATUSES[0])[1];
+    const note=(l.log&&l.log[0]&&l.log[0].note)?('<br>📝 '+esc(l.log[0].note)):'';
+    return `<div class="notif-item">
+      <span class="nwho">${esc(l.by)}</span> ${x.isNew?'הוסיף ליד חדש 🆕':'עדכן ליד 🔄'}<br>
+      <b>${l.ptype==='house'?'🏠':'🏞️'} ${esc(l.title)}</b>
+      ${l.town?(' · 📍 '+esc(l.town)):''}${l.price?(' · ₪'+fmt(l.price)):''}
+      ${x.isNew?'':(' · סטטוס: <b>'+st+'</b>')}${note}<br>
+      <span class="ntime">${new Date(l.at).toLocaleString('he-IL')}</span> ·
+      <a href="#" onclick="closeNotifs();flyToLead(${JSON.stringify(l.id)});return false">🗺️ במפה</a> ·
+      <a href="#" onclick="closeNotifs();editLead(${JSON.stringify(l.id)});return false">✏️ פתח ליד</a>
+    </div>`;
+  }).join('') : '<div class="empty">אין עדכונים חדשים מהשותף 🌱</div>';
+  document.getElementById('notifPanel').style.display='flex';
+}
+function closeNotifs(){ document.getElementById('notifPanel').style.display='none'; }
+function markNotifsRead(){
+  NOTIF_SEEN=Date.now(); store.set('notif.seen', String(NOTIF_SEEN));
+  renderBell(); closeNotifs(); toast('סומן כנקרא ✓');
+}
+/* סריקה שקטה ברקע: מושך crm.json כל 90 שניות ומעדכן מפה+פעמון */
+async function pollCRM(){
+  if(!GH.ok()) return;
+  try{
+    const r=await GH.read('crm.json');
+    if(JSON.stringify(r.data)!==JSON.stringify(CRM)){
+      CRM=r.data||[]; CRM_SHA=r.sha;
+      renderCRM(); if(MAP) renderMap();
+      const fresh=CRM.filter(l=> l.by && l.by!==WHO() && (l.at||0)>LAST_TOASTED);
+      if(fresh.length) toast('🔔 '+esc(fresh[0].by)+(leadCreatedAt(fresh[0])>LAST_TOASTED?' הוסיף ליד חדש!':' עדכן ליד'));
+      LAST_TOASTED=Date.now();
+    }
+    renderBell();
+  }catch(e){}
+}
+setInterval(pollCRM, 90000);
+
 consumeInvite();
 boot();
 renderMap();   // המפה עולה מיד — היא הרקע של הכל, גם לפני חיבור
