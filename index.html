@@ -420,6 +420,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
       </div>
       <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px" class="row">
         <button class="btn sm" onclick="makeInvite()">📤 צור קישור הזמנה לשותף</button>
+        <span class="muted" style="font-size:12px;margin-inline-start:auto">גרסה: <b id="verLabel"></b></span>
         <span class="muted" style="font-size:12px">קישור שמחבר אותו בלחיצה — לשלוח בערוץ פרטי בלבד ולמחוק אחרי!</span>
       </div>
     </div>
@@ -427,7 +428,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 
   <!-- HEALTH: מצב מערכת -->
   <div class="tab" id="tab-health">
-    <h2>🩺 מצב מערכת</h2>
+    <h2>🩺 מצב מערכת <span class="muted" style="font-size:13px;font-weight:400" id="verLabel2"></span></h2>
     <div class="row" style="margin-bottom:12px">
       <button class="btn p sm" onclick="runDiagnostics()">🔄 הרץ בדיקה</button>
       <button class="btn sm" onclick="copyTechReport()">📋 העתק דוח טכני</button>
@@ -487,6 +488,7 @@ function clog(level,msg){ CLIENT_LOG.unshift({t:new Date(),level,msg:String(msg)
 window.addEventListener('error', e=>clog('error', e.message+' @'+(e.filename||'').split('/').pop()+':'+e.lineno));
 window.addEventListener('unhandledrejection', e=>clog('error','Promise: '+(e.reason&&e.reason.message||e.reason)));
 
+const APP_VERSION='2.1 · "יסוד המעלה"';   // שם גרסה — מתעדכן בכל מסירה
 const MEM = {};
 const store = {
   get(k){ try{ return localStorage.getItem(k) ?? MEM[k] ?? null; }catch(e){ return MEM[k] ?? null; } },
@@ -955,7 +957,7 @@ async function runDiagnostics(){
   box.innerHTML='<div class="empty">בודק…</div>';
   document.getElementById('healthTime').textContent='';
   const cards=[];
-  TECH_REPORT={generated:new Date().toISOString(), app_lines:document.documentElement.outerHTML.split('\n').length,
+  TECH_REPORT={generated:new Date().toISOString(), app_version:APP_VERSION, app_lines:document.documentElement.outerHTML.split('\n').length,
     ua:navigator.userAgent.slice(0,80), connected:!!GH.ok(), repo:GH.owner+'/'+GH.repo+'@'+GH.branch,
     files:{}, findings:null, actions_runs:null, client_log:CLIENT_LOG.slice(0,15).map(l=>({t:l.t.toISOString(),level:l.level,msg:l.msg}))};
 
@@ -1681,8 +1683,13 @@ async function checkUpdate(){
   }
 }
 setInterval(checkUpdate, 180000);   // בדיקה כל 3 דקות
+// אייפון מקפיא טיימרים ברקע — בודקים מיד בכל חזרה לאפליקציה
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) checkUpdate(); });
+window.addEventListener('pageshow', ()=>checkUpdate());
 setTimeout(checkUpdate, 5000);      // וקיבוע גרסה מיד אחרי הטעינה
 
+(function(){ const v=document.getElementById('verLabel'); if(v) v.textContent=APP_VERSION;
+  const v2=document.getElementById('verLabel2'); if(v2) v2.textContent='· גרסה '+APP_VERSION; })();
 consumeInvite();
 boot();
 renderMap();   // המפה עולה מיד — היא הרקע של הכל, גם לפני חיבור
