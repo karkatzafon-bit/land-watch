@@ -1165,7 +1165,7 @@ function renderMap(){
       ${l.dunam?('🏞️ '+l.dunam+' דונם<br>'):''}
       סטטוס: <b>${st[1]}</b>${urgent?' · <span style="color:#A8492A">🔴 דחוף</span>':''}<br>
       <button onclick='cycleLead(${JSON.stringify(l.id)});MAP.closePopup()' style="margin:4px 0;padding:4px 10px;border-radius:8px;border:1px solid #2F5D3A;background:#E7F1E8;font-family:Assistant;font-weight:700;cursor:pointer">${st[1]} ← קדם סטטוס</button>
-      <button onclick='MAP.closePopup();editLead(${JSON.stringify(l.id)})' style="margin:4px 4px 4px 0;padding:4px 10px;border-radius:8px;border:1px solid #C7C2B2;background:#fff;font-family:Assistant;font-weight:700;cursor:pointer">✏️ ערוך</button><br>
+      <button onclick='editLead(${JSON.stringify(l.id)})' style="margin:4px 4px 4px 0;padding:4px 10px;border-radius:8px;border:1px solid #C7C2B2;background:#fff;font-family:Assistant;font-weight:700;cursor:pointer">✏️ ערוך</button><br>
       ${tel?('<a href="tel:'+tel+'">📞 חיוג</a> · '):''}
       ${wazeUrl(l)?('<a href="'+wazeUrl(l)+'" target="_blank" rel="noopener" style="color:#05a8d7;font-weight:800">🚗 נווט בוויז</a> · '):''}
       ${l.link?('<a href="'+escAttr(l.link)+'" target="_blank" rel="noopener">פתח מודעה ↗</a>'):''}
@@ -1304,6 +1304,7 @@ function clearLeadForm(){
 }
 function editLead(id){
   const l=CRM.find(x=>x.id===id); if(!l) return;
+  try{ if(typeof MAP!=='undefined' && MAP) MAP.closePopup(); }catch(e){}
   EDIT_ID=id;
   setPtype(l.ptype==='house'?'house':'plot');
   document.getElementById('leadTitle').value=l.title||'';
