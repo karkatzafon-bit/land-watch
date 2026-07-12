@@ -58,6 +58,22 @@ body.nav-open #bellBtn{right:70px}
 #bellBadge.show{display:flex}
 body.tab-open #bellBtn{opacity:0;pointer-events:none}
 body.tab-open .tab.on{padding-top:72px}
+/* גיליון: עמודת הערות מוסתרת עד שמרחיבים */
+.col-note{display:none}
+body.sheet-wide .col-note{display:table-cell;max-width:260px}
+body.sheet-wide #tab-sheet.on{width:100vw;max-width:100vw;right:0 !important}
+/* 🖨️ הדפסה: רק הגיליון, שחור על לבן, כולל הערות */
+@media print{
+  body.printing-sheet *{visibility:hidden}
+  body.printing-sheet #tab-sheet, body.printing-sheet #tab-sheet *{visibility:visible}
+  body.printing-sheet #tab-sheet{position:absolute;inset:0;width:100%;max-width:100%;
+    padding:10mm;background:#fff;box-shadow:none;border:none;overflow:visible}
+  body.printing-sheet .col-note{display:table-cell}
+  body.printing-sheet #tab-sheet .btn, body.printing-sheet #sheetWideBtn{display:none}
+  body.printing-sheet #sheet{min-width:0;font-size:11px}
+  body.printing-sheet #sheet th, body.printing-sheet #sheet td{border:1px solid #999;padding:4px 6px;color:#000}
+  body.printing-sheet a{color:#000;text-decoration:none}
+}
 .notif-item{border-bottom:1px dashed var(--line);padding:10px 2px;font-size:14px;line-height:1.5}
 .notif-item:last-child{border-bottom:0}
 .notif-item .nwho{font-weight:800;color:var(--olive-deep)}
@@ -79,6 +95,9 @@ main{position:static}
   box-shadow:-10px 0 32px rgba(0,0,0,.20);transform:translateX(120%);
   transition:transform .25s ease;display:block;border-inline-start:1px solid var(--line)}
 .tab.on{transform:none}
+@media (max-width:480px){
+  .tab{width:calc(100vw - 62px)}   /* בנייד: החלון על כל הרוחב, הסרגל נשאר */
+}
 body.nav-open .tab{right:62px;width:min(430px,calc(100vw - 62px))}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 
@@ -442,7 +461,11 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
   <!-- SHEET: כל הלידים בטבלה -->
   <div class="tab" id="tab-sheet">
     <h2>📊 גיליון לידים</h2>
-    <p class="muted" style="margin-top:-6px">מבט-על מרוכז. לחיצה על כותרת עמודה — מיון.</p>
+    <div class="row" style="margin:-4px 0 10px">
+      <button class="btn sm" onclick="toggleSheetWide()" id="sheetWideBtn">⤢ הרחב</button>
+      <button class="btn sm" onclick="printSheet()">🖨️ הדפס</button>
+      <span class="muted" style="font-size:12px">לחיצה על כותרת עמודה — מיון</span>
+    </div>
     <div style="overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff">
       <table id="sheet" style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px">
         <thead></thead><tbody></tbody>
@@ -490,7 +513,7 @@ function clog(level,msg){ CLIENT_LOG.unshift({t:new Date(),level,msg:String(msg)
 window.addEventListener('error', e=>clog('error', e.message+' @'+(e.filename||'').split('/').pop()+':'+e.lineno));
 window.addEventListener('unhandledrejection', e=>clog('error','Promise: '+(e.reason&&e.reason.message||e.reason)));
 
-const APP_VERSION='2.2 · "משמר הירדן"';   // שם גרסה — מתעדכן בכל מסירה
+const APP_VERSION='2.4 · "חולתה"';   // שם גרסה — מתעדכן בכל מסירה
 const MEM = {};
 const store = {
   get(k){ try{ return localStorage.getItem(k) ?? MEM[k] ?? null; }catch(e){ return MEM[k] ?? null; } },
@@ -716,15 +739,35 @@ function goHomeZone(){
 }
 
 /* --- 📍 המיקום שלי --- */
+let GPS_WATCH=null;
+function drawMyMark(c){
+  if(MY_MARK) MAP.removeLayer(MY_MARK);
+  MY_MARK=L.circleMarker(c,{radius:9,color:'#0D47A1',fillColor:'#4C86E8',
+    fillOpacity:.9,weight:3}).addTo(MAP).bindPopup(GPS_WATCH?'🛰️ מצב שטח — עוקב אחריך':'📍 אתה כאן');
+}
 function locateMe(){
   if(!navigator.geolocation){ toast('הדפדפן לא תומך במיקום'); return; }
+  const btn=document.querySelector('button[aria-label="המיקום שלי"]');
+  if(GPS_WATCH!==null){
+    /* לחיצה שנייה — כיבוי מצב שטח */
+    navigator.geolocation.clearWatch(GPS_WATCH); GPS_WATCH=null;
+    if(btn){ btn.style.background='rgba(255,255,255,.97)'; btn.textContent='📍'; }
+    toast('מצב שטח כובה');
+    return;
+  }
   toast('מאתר…');
   navigator.geolocation.getCurrentPosition(pos=>{
     const c=[pos.coords.latitude,pos.coords.longitude];
-    if(MY_MARK) MAP.removeLayer(MY_MARK);
-    MY_MARK=L.circleMarker(c,{radius:9,color:'#0D47A1',fillColor:'#4C86E8',
-      fillOpacity:.9,weight:3}).addTo(MAP).bindPopup('📍 אתה כאן');
+    drawMyMark(c);
     MAP.setView(c, Math.max(MAP.getZoom(),13));
+    /* מפעילים מעקב חי — המפה נוסעת איתך */
+    GPS_WATCH=navigator.geolocation.watchPosition(p=>{
+      const cc=[p.coords.latitude,p.coords.longitude];
+      drawMyMark(cc);
+      MAP.panTo(cc, {animate:true});
+    }, ()=>{}, {enableHighAccuracy:true, maximumAge:3000});
+    if(btn){ btn.style.background='#DCEBFF'; btn.textContent='🛰️'; }
+    toast('🛰️ מצב שטח פועל — המפה עוקבת אחריך (לחיצה נוספת מכבה)');
   }, err=>toast('לא הצלחתי לאתר: '+err.message), {enableHighAccuracy:true,timeout:10000});
 }
 
@@ -960,7 +1003,7 @@ async function runDiagnostics(){
   box.innerHTML='<div class="empty">בודק…</div>';
   document.getElementById('healthTime').textContent='';
   const cards=[];
-  TECH_REPORT={generated:new Date().toISOString(), app_version:APP_VERSION, app_lines:document.documentElement.outerHTML.split('\n').length,
+  TECH_REPORT={generated:new Date().toISOString(), app_version:APP_VERSION, build:(BUILD_INFO&&BUILD_INFO.build)||null, app_lines:document.documentElement.outerHTML.split('\n').length,
     ua:navigator.userAgent.slice(0,80), connected:!!GH.ok(), repo:GH.owner+'/'+GH.repo+'@'+GH.branch,
     files:{}, findings:null, actions_runs:null, client_log:CLIENT_LOG.slice(0,15).map(l=>({t:l.t.toISOString(),level:l.level,msg:l.msg}))};
 
@@ -1056,10 +1099,11 @@ async function runDiagnostics(){
 let SHEET_SORT={key:'urgent',dir:-1};
 const SHEET_COLS=[
   ['type','סוג'],['title','שם'],['town','יישוב'],['price','מחיר ₪'],
-  ['dunam','דונם'],['sqm','מ״ר'],['status','סטטוס'],['phone','טלפון'],['waze','נווט'],['by','עודכן ע״י']
+  ['dunam','דונם'],['sqm','מ״ר'],['status','סטטוס'],['phone','טלפון'],['note','הערות'],['waze','נווט'],['by','עודכן ע״י']
 ];
 function sheetVal(l,k){
   if(k==='waze') return l.town||'';
+  if(k==='note') return l.note||'';
   if(k==='type') return l.ptype==='house'?'🏠 בית':'🏞️ מגרש';
   if(k==='status') return (STATUSES.find(s=>s[0]===l.status)||STATUSES[0])[1];
   if(k==='urgent') return (l.price && PROFILE && l.price<(PROFILE.urgent_below||0))?1:0;
@@ -1069,12 +1113,22 @@ function setSort(k){
   SHEET_SORT = SHEET_SORT.key===k ? {key:k,dir:-SHEET_SORT.dir} : {key:k,dir:1};
   renderSheet();
 }
+function toggleSheetWide(){
+  const on=document.body.classList.toggle('sheet-wide');
+  const b=document.getElementById('sheetWideBtn');
+  if(b) b.textContent = on ? '⤡ כווץ' : '⤢ הרחב';
+}
+function printSheet(){
+  document.body.classList.add('printing-sheet');
+  setTimeout(()=>{ window.print();
+    setTimeout(()=>document.body.classList.remove('printing-sheet'), 500); }, 60);
+}
 function renderSheet(){
   const thead=document.querySelector('#sheet thead');
   const tbody=document.querySelector('#sheet tbody');
   thead.innerHTML='<tr>'+SHEET_COLS.map(([k,lbl])=>
-    `<th onclick="setSort('${k}')">${lbl}${SHEET_SORT.key===k?(SHEET_SORT.dir>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
-  if(!CRM.length){ tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:26px">אין לידים עדיין 🌱</td></tr>'; return; }
+    `<th class="col-${k}" onclick="setSort('${k}')">${lbl}${SHEET_SORT.key===k?(SHEET_SORT.dir>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
+  if(!CRM.length){ tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:26px">אין לידים עדיין 🌱</td></tr>'; return; }
   const rows=[...CRM].sort((a,b)=>{
     // דחופים תמיד למעלה, ואז לפי העמודה שנבחרה
     const u=sheetVal(b,'urgent')-sheetVal(a,'urgent'); if(u) return u;
@@ -1094,7 +1148,8 @@ function renderSheet(){
       <td>${l.sqm||'—'}</td>
       <td>${sheetVal(l,'status')}</td>
       <td>${tel?`<a href="tel:${tel}">📞 ${esc(l.phone)}</a>`:'—'}</td>
-      <td>${wazeUrl(l)?`<a href="${wazeUrl(l)}" target="_blank" rel="noopener">🚗</a>`:'—'}</td>
+      <td class="col-note">${l.note?esc(l.note):'—'}${(l.log&&l.log[0]&&l.log[0].note)?`<div class="muted" style="font-size:11.5px">🕐 ${esc(l.log[0].note)}</div>`:''}</td>
+      <td class="col-waze">${wazeUrl(l)?`<a href="${wazeUrl(l)}" target="_blank" rel="noopener">🚗</a>`:'—'}</td>
       <td>${esc(l.by||'—')}</td>
     </tr>`;
   }).join('');
@@ -1268,9 +1323,24 @@ async function loadCRM(){
 }
 async function pushCRM(msg){
   try{ CRM_SHA = await GH.write('crm.json', CRM, CRM_SHA, msg); toast('נשמר ✓'); }
-  catch(e){ toast('שגיאת שמירה: '+e.message); }
+  catch(e){
+    /* התנגשות (שני שותפים שמרו יחד): מושכים טרי, ממזגים לפי "החדש מנצח", ושומרים שוב */
+    try{
+      const r=await GH.read('crm.json');
+      const remote=r.data||[], byId={};
+      remote.forEach(x=>{ if(x&&x.id) byId[x.id]=x; });
+      CRM.forEach(x=>{ const o=byId[x.id]; if(!o || (x.at||0)>=(o.at||0)) byId[x.id]=x; });
+      const seen=new Set(), merged=[];
+      CRM.forEach(x=>{ if(byId[x.id]&&!seen.has(x.id)){ merged.push(byId[x.id]); seen.add(x.id);} });
+      remote.forEach(x=>{ if(x&&x.id&&!seen.has(x.id)){ merged.push(byId[x.id]); seen.add(x.id);} });
+      CRM=merged;
+      CRM_SHA=await GH.write('crm.json', CRM, r.sha, msg+' (merged)');
+      toast('נשמר ✓ — מוזג עם עדכון של השותף 🤝');
+    }catch(e2){ toast('שגיאת שמירה: '+e2.message); }
+  }
   renderCRM();
   if(MAP) renderMap();
+  if(typeof renderBell==='function') renderBell();
 }
 function leadFromFeed(id){
   const f=FEED.find(x=>x.id===id); if(!f) return;
@@ -1691,6 +1761,18 @@ document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) checkUp
 window.addEventListener('pageshow', ()=>checkUpdate());
 setTimeout(checkUpdate, 5000);      // וקיבוע גרסה מיד אחרי הטעינה
 
+let BUILD_INFO=null;
+async function loadBuildInfo(){
+  try{
+    const r=await fetch(`https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/version.json?t=`+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    BUILD_INFO=await r.json();
+    const tail=' · build '+BUILD_INFO.build+' ('+new Date(BUILD_INFO.at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+')';
+    const v=document.getElementById('verLabel');  if(v)  v.textContent=APP_VERSION+tail;
+    const v2=document.getElementById('verLabel2'); if(v2) v2.textContent='· גרסה '+APP_VERSION+tail;
+  }catch(e){}
+}
+setTimeout(loadBuildInfo, 1200);
 (function(){ const v=document.getElementById('verLabel'); if(v) v.textContent=APP_VERSION;
   const v2=document.getElementById('verLabel2'); if(v2) v2.textContent='· גרסה '+APP_VERSION; })();
 consumeInvite();
