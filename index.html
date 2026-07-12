@@ -136,6 +136,7 @@ input[type=text],input[type=number],input[type=date],input[type=password],select
   width:100%;border:1.5px solid var(--line);border-radius:12px;background:#fff;
   padding:11px 13px;font-family:"Assistant";font-size:15px;color:var(--ink);
   transition:border-color .15s, box-shadow .15s}
+input[type=date]{min-height:47px;text-align:right}
 input:focus,select:focus{outline:none;border-color:var(--olive-b);
   box-shadow:0 0 0 3px rgba(127,160,94,.18)}
 label{font-size:13px;font-weight:700;color:var(--ink-soft);display:block;margin:11px 0 5px}
@@ -180,7 +181,7 @@ ul.tasks li:active{background:#F0EDE2}
 ul.tasks li:last-child{border-bottom:0}
 ul.tasks li.done span{opacity:.5;text-decoration:line-through}
 ul.tasks input{width:18px;height:18px;accent-color:var(--olive);margin-top:2px;flex:none}
-.toast{position:fixed;bottom:96px;right:50%;transform:translateX(50%);background:var(--ink);
+.toast{position:fixed;bottom:96px;right:50%;transform:translateX(50%);z-index:960;background:var(--ink);
   color:#fff;padding:10px 20px;border-radius:999px;font-size:13.5px;z-index:99;opacity:0;
   transition:opacity .2s, transform .2s;pointer-events:none;max-width:90vw;text-align:center;
   box-shadow:0 6px 20px rgba(0,0,0,.25)}
@@ -320,6 +321,8 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
       </div>
       <label>הערות</label>
       <input type="text" id="leadNote" placeholder="גמיש במחיר / לבדוק תב״ע…">
+      <label>⏰ תזכורת / דד-ליין (יופיע בפעמון 🔔)</label>
+      <input type="date" id="leadDue">
       <div style="margin-top:12px" class="row">
         <button class="btn p" id="addLeadBtn" onclick="addLead()">+ הוסף ליד</button>
         <button class="btn" id="cancelEditBtn" style="display:none" onclick="clearLeadForm()">בטל עריכה</button>
@@ -1297,7 +1300,7 @@ function clearLeadForm(){
   ['leadTitle','leadTown','leadPrice','leadLink','leadDunam','leadPhone','leadNote','leadSqm','leadRooms'].forEach(i=>{const e=document.getElementById(i); if(e) e.value='';});
   document.getElementById('leadCond').value='';
   EDIT_ID=null; setPtype('plot'); clearPin();
-  document.getElementById('leadDue').value='';
+  { const _d=document.getElementById('leadDue'); if(_d) _d.value=''; }
   document.getElementById('leadFormTitle').textContent='➕ ליד חדש';
   document.getElementById('addLeadBtn').textContent='+ הוסף ליד';
   document.getElementById('cancelEditBtn').style.display='none';
@@ -1318,7 +1321,7 @@ function editLead(id){
   document.getElementById('leadRooms').value=l.rooms||'';
   document.getElementById('leadCond').value=l.cond||'';
   PIN_LAT=(l.lat!=null)?l.lat:null; PIN_LNG=(l.lng!=null)?l.lng:null; setPinLabel();
-  document.getElementById('leadDue').value = l.due? new Date(l.due).toISOString().slice(0,10) : '';
+  { const _d=document.getElementById('leadDue'); if(_d) _d.value = l.due? new Date(l.due).toISOString().slice(0,10) : ''; }
   document.getElementById('leadFormTitle').textContent='✏️ עריכת ליד';
   document.getElementById('addLeadBtn').textContent='💾 שמור שינויים';
   document.getElementById('cancelEditBtn').style.display='';
@@ -1334,7 +1337,7 @@ function addLead(){
     dunam:Number(document.getElementById('leadDunam').value)||null,
     phone:document.getElementById('leadPhone').value.trim(),
     note:document.getElementById('leadNote').value.trim(),
-    due:(function(){const v=document.getElementById('leadDue').value;
+    due:(function(){const e=document.getElementById('leadDue'); const v=e?e.value:'';
         return v? new Date(v+'T09:00:00').getTime() : null;})(),
     lat:PIN_LAT, lng:PIN_LNG};
   if(PTYPE==='house'){
