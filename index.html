@@ -56,6 +56,8 @@ body.nav-open #bellBtn{right:70px}
   display:none;align-items:center;justify-content:center;padding:0 5px;
   box-shadow:0 2px 6px rgba(0,0,0,.3)}
 #bellBadge.show{display:flex}
+body.tab-open #bellBtn{opacity:0;pointer-events:none}
+body.tab-open .tab.on{padding-top:72px}
 .notif-item{border-bottom:1px dashed var(--line);padding:10px 2px;font-size:14px;line-height:1.5}
 .notif-item:last-child{border-bottom:0}
 .notif-item .nwho{font-weight:800;color:var(--olive-deep)}
@@ -488,7 +490,7 @@ function clog(level,msg){ CLIENT_LOG.unshift({t:new Date(),level,msg:String(msg)
 window.addEventListener('error', e=>clog('error', e.message+' @'+(e.filename||'').split('/').pop()+':'+e.lineno));
 window.addEventListener('unhandledrejection', e=>clog('error','Promise: '+(e.reason&&e.reason.message||e.reason)));
 
-const APP_VERSION='2.1 · "יסוד המעלה"';   // שם גרסה — מתעדכן בכל מסירה
+const APP_VERSION='2.2 · "משמר הירדן"';   // שם גרסה — מתעדכן בכל מסירה
 const MEM = {};
 const store = {
   get(k){ try{ return localStorage.getItem(k) ?? MEM[k] ?? null; }catch(e){ return MEM[k] ?? null; } },
@@ -904,7 +906,7 @@ function toggleNav(){
 
   if (navOpen || anyTabOpen) {
     // מילוט אוניברסלי: מעלים הכל (סרגל + חלונות) וחוזרים למפה
-    document.body.classList.remove('nav-open');
+    document.body.classList.remove('nav-open'); document.body.classList.remove('tab-open');
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
     document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === 'map'));
     document.getElementById('navToggle').textContent = '☰';
@@ -918,6 +920,7 @@ function toggleNav(){
 
 function openTab(t){   // פתיחה ישירה של מגירה, בלי לוגיקת "סגור אם פתוח"
   document.body.classList.add('nav-open');   // הסרגל נשאר גלוי לצד המגירה
+  document.body.classList.add('tab-open');
   document.getElementById('navToggle').textContent='✕';
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on', x.id==='tab-'+t));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
@@ -1289,7 +1292,7 @@ function clearPin(){ PIN_LAT=null; PIN_LNG=null; setPinLabel(); }
 function startPinMode(){
   PINNING=true;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
-  document.body.classList.remove('nav-open');
+  document.body.classList.remove('nav-open'); document.body.classList.remove('tab-open');
   document.getElementById('navToggle').textContent='☰';
   toast('📌 הקש על המפה במיקום המדויק של הנכס');
 }
@@ -1554,7 +1557,7 @@ function flyToLead(id){
   if(!c){ toast('לליד אין מיקום — הוסף יישוב או 📌 דקור אותו'); return; }
   // סוגרים הכל וחוזרים למפה
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
-  document.body.classList.remove('nav-open');
+  document.body.classList.remove('nav-open'); document.body.classList.remove('tab-open');
   document.getElementById('navToggle').textContent='☰';
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab==='map'));
   renderMap();
