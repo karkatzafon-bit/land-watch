@@ -1,5 +1,25 @@
 [
  {
+  "id": "l1784129207187",
+  "status": "new",
+  "by": "ניתאי",
+  "at": 1784129207187,
+  "title": "נוף ההר 36 צפת",
+  "ptype": "plot",
+  "town": "צפת",
+  "price": 409978,
+  "link": "",
+  "dunam": 2,
+  "phone": "",
+  "note": "2 חלקות של דונם חקלאיות",
+  "due": null,
+  "lat": null,
+  "lng": null,
+  "sqm": null,
+  "rooms": null,
+  "cond": ""
+ },
+ {
   "id": "l1783937485293",
   "status": "new",
   "by": "ניתאי",
