@@ -1,5 +1,33 @@
 [
  {
+  "id": "f5fee37f1fd64412",
+  "ts": 1784216819,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏השכרת דירות בגליל המערבי‏",
+  "link": "https://www.facebook.com/nd/?groups%2F570569049694916%2F&aref=1784204901133730&medium=email&mid=656b949c0aad0G5af41325b406G656b99356ada2G91&bcode=2.1784204902.Ab2XyjwSRSNFuQ0puEswMH3R9W8&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKb1cV2llBIRsKTjT8wl7QMBUAoOQZm4MWdL8OroX5U0Q",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
+  "id": "60e900055a731c55",
+  "ts": 1784216816,
+  "source": "web",
+  "kind": "listing",
+  "title": "מסלול אופניים: אמונה ומים קרים  בגליל  העליון | שטח",
+  "link": "https://www.automag.co.il/emteb-bike-ride-israel/",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "0675703df4668e3e",
   "ts": 1784061693,
   "source": "yad2",
