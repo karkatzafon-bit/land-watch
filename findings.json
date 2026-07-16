@@ -1,5 +1,47 @@
 [
  {
+  "id": "ce5ac88a5b00f805",
+  "ts": 1784243607,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏שיפוצים‏",
+  "link": "https://www.facebook.com/nd/?groups%2F1525708264342462%2F&aref=1784234053165014&medium=email&mid=656c013595d04G5af41325b406G656c05cef5fd6G91&bcode=2.1784234054.Ab39aDAMWHCTu2y5HlHHoP3cYSk&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKs8vfL3UH39sFwtd2ZQAehDdpN0vOkBiibyRQ-B2AbsQ",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
+  "id": "b1345c1224331fa6",
+  "ts": 1784243607,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏הנדימן‏",
+  "link": "https://www.facebook.com/nd/?groups%2F2680237702280782%2F&aref=1784234533218258&medium=email&mid=656c02ff66500G5af41325b406G656c0798c67d2G91&bcode=2.1784234534.Ab16m50L7tt1lYfEhokHj0tqAiY&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKZk978qOHmohoUG7vNms0iC-UxVZJH4jdR7-DENkcFuw",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
+  "id": "c0f9cec2083d2ecb",
+  "ts": 1784243607,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏‎Secret Tel Aviv‎‏",
+  "link": "https://www.facebook.com/nd/?groups%2Fsecrettelaviv%2F&aref=1784235097430527&medium=email&mid=656c05197972dG5af41325b406G656c09b2d99ffG91&bcode=2.1784235098.Ab1sRgO7r-hQZmwnxZQsOYE4_DQ&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKbogKizyu2eB3KHbSjDI-vAzAe5XheuWoX3221DJjHOw",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "250260ff30a58e55",
   "ts": 1784231114,
   "source": "yad2",
