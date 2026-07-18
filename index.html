@@ -342,6 +342,8 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
       <button class="mtool" id="toolDist" onclick="startTool('dist')" title="מדידת מרחק">📐</button>
       <button class="mtool" id="toolArea" onclick="startTool('area')" title="מדידת שטח">📏</button>
       <button class="mtool" id="toolZone" onclick="startTool('zone')" title="ציור גזרה">✏️</button>
+      <button class="mtool" id="toolZFilter" onclick="toggleZoneFilter()" title="הצג רק לידים בגזרות">⬠</button>
+      <button class="mtool" id="toolZMgr" onclick="openZonesManager()" title="ניהול גזרות">🗂️</button>
       <button class="mtool deskonly" id="toolTender" onclick="openGovmapTenders()" title="מכרזי רמ״י">🏛️</button>
     </div>
     <button class="mtool" id="toolSat" onclick="toggleSat()" title="מפה/לוויין">🛰️</button>
@@ -459,7 +461,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.5 · "משמר הירדן"';
+const APP_VERSION='3.0.6 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -643,6 +645,7 @@ function renderMarkers(){
   MARKERS.forEach(m=>MAP.removeLayer(m)); MARKERS=[];
   DATA.leads.forEach(l=>{
     const c=leadCoords(l); if(!c)return;
+    if(ZONE_FILTER&&!zoneOf(l))return;   // ⬠ פילטר גזרות
     const t=tierOf(l), agri=isAgri(l);
     const cls=agri&&!l.agriAck?'agri':(t?'t'+Math.min(t,3):'');
     const ic=L.divIcon({html:`<button class="pricetag ${cls}">${agri?'⚠️ ':''}${l.price?fmtK(l.price):'?'}</button>`,iconAnchor:[22,14]});
@@ -652,40 +655,73 @@ function renderMarkers(){
     MARKERS.push(m);
   });
 }
+/* נקודות גזרה נשמרות כאובייקטים {la,ln} (Firestore לא תומך מערך-בתוך-מערך) */
+function zPts(z){ return (z.points||[]).map(p=>Array.isArray(p)?p:[p.la??p.lat,p.ln??p.lng])
+  .filter(p=>p[0]!=null&&p[1]!=null); }
 function renderZones(){
   ZLAYERS.forEach(z=>MAP.removeLayer(z)); ZLAYERS=[];
   DATA.zones.forEach((z,i)=>{
-    if(!z.points||z.points.length<3)return;
+    const pts=zPts(z); if(pts.length<3)return;
     const col=z.color||ZONE_COLORS[i%ZONE_COLORS.length];
-    const poly=L.polygon(z.points,{color:col,weight:2.5,dashArray:'6 5',fillColor:col,fillOpacity:.12}).addTo(MAP);
+    const poly=L.polygon(pts,{color:col,weight:2.5,dashArray:'6 5',fillColor:col,fillOpacity:.12}).addTo(MAP);
     poly.bindTooltip(z.name||('גזרה '+(i+1)),{permanent:true,direction:'center',className:'zonelbl'});
     poly.on('click',e=>{ if(TOOL){ mapClick(e); return; } L.DomEvent.stopPropagation(e); openZonePopup(z.id); });
     ZLAYERS.push(poly);
   });
 }
 /* ניהול גזרה — לחיצה על גזרה קיימת */
+function zoneCenter(z){ const p=zPts(z);
+  return p.reduce((a,q)=>[a[0]+q[0]/p.length,a[1]+q[1]/p.length],[0,0]); }
+function zoneLeadCount(z){ const p=zPts(z);
+  return DATA.leads.filter(l=>{const c=leadCoords(l);return c&&pointInPoly(c,p);}).length; }
 function openZonePopup(id){
   const z=DATA.zones.find(x=>x.id===id); if(!z)return;
-  const center=z.points.reduce((a,p)=>[a[0]+p[0]/z.points.length,a[1]+p[1]/z.points.length],[0,0]);
-  L.popup({maxWidth:260}).setLatLng(center).setContent(`
+  L.popup({maxWidth:260}).setLatLng(zoneCenter(z)).setContent(`
     <b>🗺️ ${esc(z.name||'גזרה')}</b>
-    <div class="pm">${areaDunam(z.points).toFixed(0)} דונם · ${DATA.leads.filter(l=>{const c=leadCoords(l);return c&&pointInPoly(c,z.points);}).length} לידים בפנים</div>
+    <div class="pm">${areaDunam(zPts(z)).toFixed(0)} דונם · ${zoneLeadCount(z)} לידים בפנים</div>
     <div class="pbtns">
       <button class="pkb" onclick="renameZone('${z.id}')">✏️ שם</button>
-      <button class="pkb" onclick="recolorZone('${z.id}')">🎨 צבע</button>
+      <button class="pkb" onclick="openZonesManager()">🗂️ ניהול</button>
       <button class="pkb" style="background:var(--clay-l);color:var(--clay)" onclick="delZone('${z.id}')">🗑️ מחק</button>
     </div>`).openOn(MAP);
 }
 function renameZone(id){ const z=DATA.zones.find(x=>x.id===id); if(!z)return;
   const n=prompt('שם הגזרה:',z.name||''); if(n===null)return;
   DB.collection('zones').doc(id).update({name:n||'גזרה',by:WHO(),at:Date.now()}); MAP.closePopup(); toast('שם עודכן ✓'); }
-function recolorZone(id){ const z=DATA.zones.find(x=>x.id===id); if(!z)return;
-  const i=(ZONE_COLORS.indexOf(z.color)+1)%ZONE_COLORS.length;
-  DB.collection('zones').doc(id).update({color:ZONE_COLORS[i],by:WHO(),at:Date.now()}); toast('🎨 צבע הוחלף'); }
+function setZoneColor(id,col){ DB.collection('zones').doc(id).update({color:col,by:WHO(),at:Date.now()})
+  .then(()=>{ toast('🎨 צבע עודכן'); openZonesManager(); }); }
 function delZone(id){ if(!confirm('למחוק את הגזרה? (הלידים שבתוכה לא נמחקים)'))return;
-  DB.collection('zones').doc(id).delete(); MAP.closePopup(); toast('גזרה נמחקה'); }
+  DB.collection('zones').doc(id).delete().then(()=>{ MAP.closePopup(); toast('גזרה נמחקה');
+    if(document.getElementById('overlay').classList.contains('show'))openZonesManager(); }); }
+/* 🗂️ חלונית ניהול גזרות */
+function openZonesManager(){
+  openSheet(`<div class="grab"></div><h3>🗂️ ניהול גזרות</h3>
+    ${DATA.zones.length?DATA.zones.map(z=>{ const col=z.color||'#0E8A52';
+      return `<div class="card" style="border-inline-start:5px solid ${col}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <b style="font-size:14px">${esc(z.name||'גזרה')}</b>
+          <span class="mutetxt">${areaDunam(zPts(z)).toFixed(0)} דונם · ${zoneLeadCount(z)} לידים</span></div>
+        <div style="display:flex;gap:5px;margin:9px 0 10px">
+          ${ZONE_COLORS.map(c=>`<button onclick="setZoneColor('${z.id}','${c}')" title="בחר צבע"
+            style="width:30px;height:30px;border-radius:50%;background:${c};border:${c===col?'3px solid var(--ink)':'2px solid #fff'};box-shadow:0 1px 4px rgba(0,0,0,.2)"></button>`).join('')}
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="pkb" onclick="closeSheet();nav('map');MAP.flyTo([${zoneCenter(z)}],12)">🎯 קפוץ</button>
+          <button class="pkb" onclick="renameZone('${z.id}')">✏️ שם</button>
+          <button class="pkb" style="background:var(--clay-l);color:var(--clay)" onclick="delZone('${z.id}')">🗑️</button>
+        </div></div>`; }).join(''):
+      '<div class="card mutetxt">אין גזרות עדיין.</div>'}
+    <button class="btn p" style="width:100%;padding:13px;margin-top:4px"
+      onclick="closeSheet();nav('map');startTool('zone')">✏️ צייר גזרה חדשה</button>`);
+}
+/* ⬠ פילטר: הצג רק לידים בתוך גזרות */
+let ZONE_FILTER=false;
+function toggleZoneFilter(){ ZONE_FILTER=!ZONE_FILTER;
+  document.getElementById('toolZFilter').classList.toggle('on',ZONE_FILTER);
+  renderMarkers();
+  toast(ZONE_FILTER?'⬠ מציג רק לידים בתוך הגזרות':'מציג את כל הלידים'); }
 function zoneOf(l){ const c=leadCoords(l); if(!c)return null;
-  for(const z of DATA.zones){ if(z.points&&z.points.length>2&&pointInPoly(c,z.points))return z; } return null; }
+  for(const z of DATA.zones){ const p=zPts(z); if(p.length>2&&pointInPoly(c,p))return z; } return null; }
 function pointInPoly(p,poly){ let inside=false;
   for(let i=0,j=poly.length-1;i<poly.length;j=i++){
     const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
@@ -714,16 +750,23 @@ function drawInfo(){
   if((TOOL==='area'||TOOL==='zone')&&TPTS.length>2)extra=' · '+areaDunam(TPTS).toFixed(1)+' דונם';
   document.getElementById('drawCnt').textContent=TPTS.length+' נק׳'+extra;
 }
+let TVERTS=[];
 function redrawTool(){
   if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null;}
+  TVERTS.forEach(v=>MAP.removeLayer(v)); TVERTS=[];
   if(!TPTS.length)return;
-  if(TOOL==='dist')TLAYER=L.polyline(TPTS,{color:'#0a7ea8',weight:3}).addTo(MAP);
-  else TLAYER=L.polygon(TPTS,{color:TOOL==='zone'?'#0E8A52':'#C89A1F',weight:2.5,dashArray:'6 5',fillOpacity:.12}).addTo(MAP);
+  // בזמן ציור — קו מתאר בלבד (בלי מילוי); הגוף המלא נוצר רק אחרי שמירה
+  const col=TOOL==='dist'?'#0a7ea8':TOOL==='zone'?'#0E8A52':'#C89A1F';
+  TLAYER=L.polyline(TPTS,{color:col,weight:3.5,dashArray:TOOL==='dist'?null:'8 6'}).addTo(MAP);
+  // נקודות בולטות
+  TPTS.forEach((p,i)=>TVERTS.push(L.circleMarker(p,{radius:8,color:'#fff',weight:3,
+    fillColor:i===TPTS.length-1?'#D4B76D':col,fillOpacity:1}).addTo(MAP)));
 }
 function undoPoint(){ TPTS.pop(); redrawTool(); drawInfo(); }
 function cancelTool(){
   TOOL=null;TPTS=[];
   if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null;}
+  TVERTS.forEach(v=>MAP.removeLayer(v)); TVERTS=[];
   ['toolDist','toolArea','toolZone'].forEach(id=>document.getElementById(id).classList.remove('on'));
   document.getElementById('drawbar').classList.remove('on');
   if(MAP)MAP.doubleClickZoom.enable();
@@ -734,9 +777,10 @@ function endTool(){
     const name=prompt('שם הגזרה? (למשל: עמק החולה)','גזרה חדשה');
     if(name===null)return;   // ביטול prompt — ממשיכים לצייר
     const color=ZONE_COLORS[DATA.zones.length%ZONE_COLORS.length];
-    DB.collection('zones').add({name:name||'גזרה',color,points:TPTS,by:WHO(),at:Date.now()})
-      .then(()=>toast('✏️ גזרה "'+(name||'גזרה')+'" נשמרה ✓'))
-      .catch(e=>toast('שמירה נכשלה: '+e.code));
+    const pts=TPTS.map(p=>({la:p[0],ln:p[1]}));   // פורמט ש-Firestore מקבל
+    DB.collection('zones').add({name:name||'גזרה',color,points:pts,by:WHO(),at:Date.now()})
+      .then(()=>toast('✏️ גזרה "'+(name||'גזרה')+'" נשמרה ✓ — עכשיו היא גוף מלא על המפה'))
+      .catch(e=>{ toast('שמירה נכשלה: '+e.code); clog('error','zone save '+e.code); });
   }
   cancelTool();
 }
@@ -1301,12 +1345,30 @@ function renderMore(){
       <div class="mutetxt">מושך את הלידים/פיד/פרופיל מהקבצים הישנים בריפו ומכניס ל-Firebase. מריצים פעם אחת בלבד.</div>
       <button class="btn" style="margin-top:9px" onclick="importOld()">▶️ הרץ ייבוא חד-פעמי</button></div>`:''}`;
 }
+let SEARCH_MARK=null,SEARCH_LL=null,SEARCH_LBL='';
+function dropSearchPin(c,label){
+  if(SEARCH_MARK)MAP.removeLayer(SEARCH_MARK);
+  SEARCH_LL=c; SEARCH_LBL=label;
+  SEARCH_MARK=L.marker(c,{icon:L.divIcon({html:'<div style="font-size:34px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))">📍</div>',iconAnchor:[17,34]})}).addTo(MAP)
+    .bindPopup(`<b>📍 ${esc(label)}</b>
+      <div class="pbtns" style="margin-top:9px">
+        <button class="pkb g" onclick="searchPinToLead()">➕ הוסף כליד</button>
+        <a class="pkb w" href="https://waze.com/ul?ll=${c[0]},${c[1]}&navigate=yes" target="_blank" rel="noopener">🚗 וויז</a>
+        <button class="pkb" onclick="clearSearchPin()">✕ הסר</button>
+      </div>`,{maxWidth:260}).openPopup();
+}
+function clearSearchPin(){ if(SEARCH_MARK){MAP.removeLayer(SEARCH_MARK);SEARCH_MARK=null;} MAP.closePopup(); }
+function searchPinToLead(){ if(!SEARCH_LL)return; MAP.closePopup();
+  openQuickAdd({lat:SEARCH_LL[0],lng:SEARCH_LL[1]});
+  setTimeout(()=>{ const t=document.getElementById('qaTitle'); if(t&&!t.value)t.value=SEARCH_LBL; },300); }
 async function searchPlace(q){
   if(!q)return;
-  if(townCoords(q)){ nav('map'); MAP.flyTo(townCoords(q),14); toast('📍 '+q); return; }
+  const tc=townCoords(q);
+  if(tc){ nav('map'); MAP.flyTo(tc,14); dropSearchPin(tc,q); return; }
   try{ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=il&q='+encodeURIComponent(q));
     const res=await r.json();
-    if(res[0]){ nav('map'); MAP.flyTo([+res[0].lat,+res[0].lon],14); toast('📍 '+res[0].display_name.split(',')[0]); }
+    if(res[0]){ const c=[+res[0].lat,+res[0].lon], lbl=res[0].display_name.split(',').slice(0,2).join(', ');
+      nav('map'); MAP.flyTo(c,15); dropSearchPin(c,lbl); }
     else toast('לא נמצא'); }catch(e){ toast('החיפוש נכשל'); }
 }
 function doSearch(){ searchPlace(document.getElementById('srchQ').value.trim()); }
