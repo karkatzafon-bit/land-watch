@@ -461,7 +461,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.7 · "משמר הירדן"';
+const APP_VERSION='3.0.8 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -582,17 +582,18 @@ const DATA={leads:[],feed:[],zones:[],profile:{},sprint:{},pipeline:{},allowed:[
 const UNSUB=[];
 function subscribeAll(){
   UNSUB.forEach(u=>u()); UNSUB.length=0;
-  UNSUB.push(DB.collection('leads').onSnapshot(s=>{ DATA.leads=s.docs.map(d=>({id:d.id,...d.data()}));
+  /* חשוב: id של המסמך תמיד גובר על שדה id ישן שהגיע מהייבוא */
+  UNSUB.push(DB.collection('leads').onSnapshot(s=>{ DATA.leads=s.docs.map(d=>({...d.data(),id:d.id}));
     renderMarkers(); refreshScreens(); updateBell(); renderDash(); },e=>clog('error','leads sub '+e.code)));
   UNSUB.push(DB.collection('feed').limit(300).onSnapshot(s=>{
-    DATA.feed=s.docs.map(d=>({id:d.id,...d.data()}))
+    DATA.feed=s.docs.map(d=>({...d.data(),id:d.id}))
       .sort((a,b)=>(b.at||b._syncedAt||b.ts||0)-(a.at||a._syncedAt||a.ts||0));
     refreshScreens(); updateFeedBadge(); renderDash(); },e=>clog('error','feed sub '+e.code)));
-  UNSUB.push(DB.collection('zones').onSnapshot(s=>{ DATA.zones=s.docs.map(d=>({id:d.id,...d.data()})); renderZones(); refreshScreens(); },e=>clog('error','zones '+e.code)));
+  UNSUB.push(DB.collection('zones').onSnapshot(s=>{ DATA.zones=s.docs.map(d=>({...d.data(),id:d.id})); renderZones(); refreshScreens(); },e=>clog('error','zones '+e.code)));
   UNSUB.push(DB.collection('profile').doc('main').onSnapshot(s=>{ DATA.profile=s.exists?s.data():{}; refreshScreens(); },e=>clog('error','profile '+e.code)));
   UNSUB.push(DB.collection('sprint').doc('main').onSnapshot(s=>{ DATA.sprint=s.exists?s.data():{}; refreshScreens(); renderDash(); },e=>clog('error','sprint '+e.code)));
   UNSUB.push(DB.collection('meta').doc('pipeline').onSnapshot(s=>{ DATA.pipeline=s.exists?s.data():{}; },e=>{}));
-  UNSUB.push(DB.collection('allowed').onSnapshot(s=>{ DATA.allowed=s.docs.map(d=>({id:d.id,...d.data()})); refreshScreens(); },e=>clog('error','allowed '+e.code)));
+  UNSUB.push(DB.collection('allowed').onSnapshot(s=>{ DATA.allowed=s.docs.map(d=>({...d.data(),id:d.id})); refreshScreens(); },e=>clog('error','allowed '+e.code)));
 }
 
 /* ─── Tier + חקלאי ─── */
