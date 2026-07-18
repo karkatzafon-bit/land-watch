@@ -224,9 +224,14 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 .pricetag.t1{background:var(--t1)}.pricetag.t2{background:var(--t2)}.pricetag.t3{background:var(--t3)}
 .pricetag.agri{background:var(--clay)}
 .leaflet-div-icon{background:none;border:none}
+.leaflet-popup-content-wrapper{border-radius:16px;box-shadow:var(--shadow)}
+.leaflet-popup-content{font-family:'Heebo',sans-serif;direction:rtl;text-align:right;margin:13px 15px;min-width:210px}
+.leaflet-popup-content b{font-size:14px}
+.leaflet-popup-content .pm{font-size:12px;color:var(--muted);margin:2px 0 8px}
+.leaflet-popup-content .pbtns{display:flex;gap:6px;flex-wrap:wrap}
 
 /* תמונת מצב צפה (מחשב) */
-#dashpanel{position:absolute;z-index:25;top:14px;inset-inline-end:14px;width:250px;background:rgba(255,255,255,.97);
+#dashpanel{position:absolute;z-index:25;top:64px;inset-inline-end:14px;width:250px;background:rgba(255,255,255,.97);
   backdrop-filter:blur(8px);border-radius:var(--r);padding:13px;box-shadow:var(--shadow);display:none}
 #dashpanel h4{margin:0 0 10px;font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
 #dashpanel h4 button{color:var(--muted);font-size:14px}
@@ -238,8 +243,8 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
   #bottomnav{display:none}
   #sidebar{display:flex}
   #map,#topbar,.scrn{inset-inline-start:212px}
+  #mapTools{inset-inline-start:224px}
   #fab{bottom:24px}
-  #peek{bottom:18px;inset-inline-start:24px;max-width:420px}
   .scrn-body{padding:18px 26px 40px;max-width:1100px}
   #dashpanel.dshow{display:block}
   #topbar{padding-top:12px}
@@ -311,20 +316,13 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
       <button class="mtool" id="toolDist" onclick="startTool('dist')" title="מדידת מרחק">📐</button>
       <button class="mtool" id="toolArea" onclick="startTool('area')" title="מדידת שטח">📏</button>
       <button class="mtool" id="toolZone" onclick="startTool('zone')" title="ציור גזרה">✏️</button>
-      <button class="mtool" id="toolSat" onclick="toggleSat()" title="לוויין">🛰️</button>
       <button class="mtool deskonly" id="toolTender" onclick="openGovmapTenders()" title="מכרזי רמ״י">🏛️</button>
     </div>
+    <button class="mtool" id="toolSat" onclick="toggleSat()" title="מפה/לוויין">🛰️</button>
     <button class="mtool" id="toolLoc" onclick="toggleLocate()" title="המיקום שלי">📍</button>
   </div>
 
   <button id="fab" onclick="openQuickAdd()" title="ליד חדש">➕</button>
-
-  <!-- כרטיס ליד קופץ -->
-  <div id="peek">
-    <button id="peekClose" onclick="closePeek()">✕</button>
-    <div class="grab"></div>
-    <div id="peekBody"></div>
-  </div>
 
   <!-- סרגל תחתון (טלפון) -->
   <div id="bottomnav">
@@ -396,6 +394,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 
   <div class="scrn" id="scrn-health">
     <div class="scrn-head"><button class="back" onclick="nav('map')">→</button><h2>🩺 מצב המערכת</h2>
+      <button class="btn sm" onclick="renderHealth()">🔄 בדוק שוב</button>
       <button class="btn sm" onclick="copyTechReport()">📋 דוח טכני</button></div>
     <div class="scrn-body" id="healthBody"></div>
   </div>
@@ -426,7 +425,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.1 · "משמר הירדן"';
+const APP_VERSION='3.0.2 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -581,6 +580,7 @@ const ZONE_COLORS=['#0E8A52','#7E5FA4','#2E6E7E','#C89A1F','#C0492E','#4A5D9E'];
 function initMap(){
   MAP=L.map('map',{zoomControl:false,attributionControl:false}).setView([33.02,35.58],11);
   if(isDesktop())L.control.zoom({position:'bottomright'}).addTo(MAP);
+  L.control.scale({metric:true,imperial:false,position:'bottomleft'}).addTo(MAP);
   BASE=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(MAP);
   SAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
   MAP.on('click',mapClick);
@@ -600,7 +600,7 @@ function renderMarkers(){
     const t=tierOf(l), agri=isAgri(l);
     const cls=agri&&!l.agriAck?'agri':(t?'t'+Math.min(t,3):'');
     const ic=L.divIcon({html:`<button class="pricetag ${cls}">${agri?'⚠️ ':''}${l.price?fmtK(l.price):'?'}</button>`,iconAnchor:[22,14]});
-    const m=L.marker(c,{icon:ic}).addTo(MAP).on('click',()=>openPeek(l.id));
+    const m=L.marker(c,{icon:ic}).addTo(MAP).on('click',()=>openLeadPopup(l.id));
     MARKERS.push(m);
   });
 }
@@ -694,17 +694,16 @@ function openGovmapTenders(){ const c=MAP?MAP.getCenter():{lat:33.02,lng:35.58};
   const [x,y]=wgs84ToITM(c.lat,c.lng);
   window.open(`https://www.govmap.gov.il/?c=${x},${y}&z=9&lay=363,362`,'_blank','noopener'); }
 
-/* ─── peek: כרטיס ליד ─── */
-let PEEK_ID=null;
-function openPeek(id){
-  const l=DATA.leads.find(x=>x.id===id); if(!l)return; PEEK_ID=id;
-  const c=leadCoords(l), d=(MYPOS&&c)?distKm(MYPOS,c):null;
-  const agri=isAgri(l);
-  document.getElementById('peekBody').innerHTML=`
+/* ─── חלונית ליד — צמודה לפין (כמו פעם) ─── */
+function openLeadPopup(id){
+  const l=DATA.leads.find(x=>x.id===id); if(!l)return;
+  const c=leadCoords(l); if(!c)return;
+  const d=MYPOS?distKm(MYPOS,c):null, agri=isAgri(l);
+  const html=`
     <b>${esc(l.title||'ליד')}</b>
     <div class="pm">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪':'מחיר ?'}
       ${d!=null?' · '+d.toFixed(1)+' ק״מ ממך':''}</div>
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
       ${tierBadge(l)}<span class="bdgx" style="background:${ST_COLOR[l.status]||'#eee'};color:#fff">${stLbl(l.status)}</span>
       ${agri?(l.agriAck?'<span class="bdgx warn">⚠️ חקלאי · אושר</span>':'<span class="bdgx warn">⚠️ חקלאי — טעון אישור</span>'):''}
     </div>
@@ -715,9 +714,8 @@ function openPeek(id){
       <button class="pkb" onclick="openEdit('${l.id}')">✏️</button>
       ${agri&&!l.agriAck?`<button class="pkb g" onclick="openAgriAck('${l.id}')">⚠️ אישור חקלאי</button>`:''}
     </div>`;
-  document.getElementById('peek').style.display='block';
+  L.popup({maxWidth:290,autoPanPadding:[40,90]}).setLatLng(c).setContent(html).openOn(MAP);
 }
-function closePeek(){ document.getElementById('peek').style.display='none'; PEEK_ID=null; }
 
 /* ─── sheets (מודאלים) ─── */
 function openSheet(html,center){ const ov=document.getElementById('overlay');
@@ -800,7 +798,7 @@ function saveEdit(id){
     .catch(e=>toast('שגיאה: '+e.code));
 }
 function delLead(id){ if(!confirm('למחוק את הליד?'))return;
-  DB.collection('leads').doc(id).delete().then(()=>{ toast('נמחק'); closeSheet(); closePeek(); }); }
+  DB.collection('leads').doc(id).delete().then(()=>{ toast('נמחק'); closeSheet(); if(MAP)MAP.closePopup(); }); }
 let PIN_FOR=null;
 function pinFromMap(id){ PIN_FOR=id; closeSheet(); nav('map'); toast('📌 לחץ על המפה בנקודה המדויקת');
   MAP.once('click',e=>{ if(!PIN_FOR)return;
@@ -827,7 +825,7 @@ function setStatus(id,st){
   const note=prompt('מה קרה? (יישמר ביומן — אפשר ריק)','')||'';
   const log=l.log||[]; log.unshift({st,note:note.trim(),by:WHO(),at:Date.now()});
   DB.collection('leads').doc(id).update({status:st,log,by:WHO(),at:Date.now()})
-    .then(()=>{ toast('סטטוס: '+stLbl(st)+' ✓'); closeSheet(); if(PEEK_ID===id)openPeek(id); });
+    .then(()=>{ toast('סטטוס: '+stLbl(st)+' ✓'); closeSheet(); if(MAP)MAP.closePopup(); });
 }
 
 /* אישור קרקע חקלאית */
@@ -848,7 +846,7 @@ function ackAgri(id){
   const l=DATA.leads.find(x=>x.id===id); const log=l.log||[];
   log.unshift({st:l.status,note:'אישור מודעות לקרקע חקלאית (תקן 22)',by:WHO(),at:Date.now()});
   DB.collection('leads').doc(id).update({agriAck:{by:WHO(),at:Date.now()},log})
-    .then(()=>{ toast('אושר — הליד נכנס למסלולים ✓'); closeSheet(); if(PEEK_ID===id)openPeek(id); });
+    .then(()=>{ toast('אושר — הליד נכנס למסלולים ✓'); closeSheet(); if(MAP)MAP.closePopup(); });
 }
 
 /* ─── ניווט מסכים ─── */
@@ -857,7 +855,7 @@ function nav(s){
   CUR=s;
   document.querySelectorAll('.scrn').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('#bottomnav button,[class^=sbitem],.sbitem').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
-  closePeek();
+  if(MAP)MAP.closePopup();
   if(s==='map'){ setTimeout(()=>MAP.invalidateSize(),50); return; }
   const el=document.getElementById('scrn-'+s); if(el){ el.classList.add('on'); renderScreen(s); }
 }
@@ -1110,27 +1108,48 @@ function saveProfile(){
 
 /* ─── מצב (health) ─── */
 let TECH_REPORT=null;
-function renderHealth(){
+async function renderHealth(){
   const b=document.getElementById('healthBody');
   const pl=DATA.pipeline||{};
   const ageH=pl.lastRun?Math.round((Date.now()-pl.lastRun)/3600000):null;
   const build=(window.BUILD_INFO&&window.BUILD_INFO.build)||null;
+  const isPWA=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const swOK=!!(navigator.serviceWorker&&navigator.serviceWorker.controller);
+  const lastLead=DATA.leads.reduce((m,l)=>Math.max(m,l.at||0),0);
+  const errs=CLIENT_LOG.filter(e=>e.lv==='error');
+  // מדידת זמן תגובה ל-Firestore
+  let latency=null;
+  if(DB&&ME){ const t0=performance.now();
+    try{ await DB.collection('meta').doc('pipeline').get(); latency=Math.round(performance.now()-t0); }catch(e){} }
   const checks=[
-    ['ok','גרסת אפליקציה',APP_VERSION+(build?' · build '+build:'')],
-    [configOK?'ok':'bad','חיבור Firebase',configOK?'מחובר לפרויקט '+firebaseConfig.projectId:'חסר firebaseConfig!'],
-    [ME?'ok':'bad','התחברות',ME?('מחובר: '+(ME.email||ME.phoneNumber)+(MY_ALLOWED?' · '+(MY_ALLOWED.role==='admin'?'מנהל':'שותף'):'')):'לא מחובר'],
-    [DATA.leads.length?'ok':'warn','לידים',DATA.leads.length+' לידים במערכת'],
-    [DATA.feed.length?'ok':'warn','פיד',DATA.feed.length+' ממצאים'],
+    ['ok','גרסה ובנייה',APP_VERSION+(build?' · build <code>'+esc(String(build)).slice(0,10)+'</code>':' · build טרם נחתם')+
+      ' · פריסה: '+(isDesktop()?'מחשב':'טלפון')],
+    [configOK?'ok':'bad','חיבור Firebase',configOK?('פרויקט <b>'+firebaseConfig.projectId+'</b>'+
+      (latency!=null?' · זמן תגובה: <b>'+latency+' מ״ש</b> '+(latency<400?'(מצוין)':latency<1200?'(סביר)':'(איטי)'):' · מדידה נכשלה')):'חסר firebaseConfig!'],
+    [ME?'ok':'bad','זהות והרשאה',ME?('מחובר: '+esc(ME.email||ME.phoneNumber)+' · תפקיד: <b>'+
+      (MY_ALLOWED?(MY_ALLOWED.role==='admin'?'👑 מנהל':'שותף'):'?')+'</b> · מזהה: <code>'+ME.uid.slice(0,8)+'…</code>'):'לא מחובר'],
+    [DATA.leads.length?'ok':'warn','מסד נתונים',
+      'לידים: <b>'+DATA.leads.length+'</b> · פיד: <b>'+DATA.feed.length+'</b> · גזרות: <b>'+DATA.zones.length+
+      '</b> · מורשים: <b>'+DATA.allowed.length+'</b>'+(lastLead?' · עדכון ליד אחרון: '+new Date(lastLead).toLocaleString('he-IL'):'')],
     [ageH==null?'warn':(ageH<3?'ok':ageH<26?'warn':'bad'),'צינור המיילים',
-      ageH==null?'עוד לא רץ מול Firestore':'ריצה אחרונה לפני '+ageH+' שעות · '+(pl.lastNew||0)+' חדשים'],
-    [DATA.zones.length?'ok':'warn','גזרות',DATA.zones.length?DATA.zones.length+' גזרות מצוירות':'אין גזרות — צייר עם ✏️'],
-    [navigator.onLine?'ok':'warn','רשת',navigator.onLine?'מחובר':'אופליין — שינויים יסתנכרנו כשתחזור קליטה'],
+      ageH==null?'עוד לא רץ מול Firestore — ודא שה-Secret FIREBASE_SERVICE_ACCOUNT הוגדר בריפו':
+      'ריצה אחרונה: לפני <b>'+ageH+' שע׳</b> · חדשים בריצה: <b>'+(pl.lastNew||0)+'</b> · סה״כ בקובץ: '+(pl.totalInFile||'?')],
+    [swOK?'ok':'warn','אפליקציה (PWA)','Service Worker: '+(swOK?'פעיל ✓':'עוד לא נטען (רענן פעם נוספת)')+
+      ' · מצב: '+(isPWA?'מותקנת על מסך הבית':'רצה בדפדפן')],
+    [navigator.onLine?'ok':'warn','רשת וסנכרון',(navigator.onLine?'מחובר':'אופליין — שינויים יסתנכרנו אוטומטית')+
+      ' · האזנות בזמן-אמת: <b>'+UNSUB.length+'</b> ערוצים'],
+    [errs.length?'warn':'ok','יומן פיתוח (שגיאות דפדפן)',errs.length?
+      errs.slice(0,5).map(e=>'<code style="font-size:11px">'+esc(e.t.slice(11,19)+' '+e.m).slice(0,90)+'</code>').join('<br>'):
+      'נקי — אפס שגיאות מאז הטעינה ✓'],
   ];
-  b.innerHTML=checks.map(([st,t,d])=>`<div class="hcard ${st}"><b>${st==='ok'?'✅':st==='warn'?'⚠️':'❌'} ${t}</b><div class="hb">${d}</div></div>`).join('');
+  b.innerHTML=checks.map(([st,t,d])=>`<div class="hcard ${st}"><b>${st==='ok'?'✅':st==='warn'?'⚠️':'❌'} ${t}</b><div class="hb">${d}</div></div>`).join('')
+    +'<div class="mutetxt" style="text-align:center;margin-top:4px">נבדק: '+new Date().toLocaleTimeString('he-IL')+' · 🔄 לבדיקה חוזרת</div>';
   TECH_REPORT={generated:new Date().toISOString(),app_version:APP_VERSION,build,
     project:configOK?firebaseConfig.projectId:null,user:ME?(ME.email||ME.phoneNumber):null,
-    leads:DATA.leads.length,feed:DATA.feed.length,zones:DATA.zones.length,allowed:DATA.allowed.length,
-    pipeline:pl,online:navigator.onLine,ua:navigator.userAgent.slice(0,80),log:CLIENT_LOG.slice(0,15)};
+    role:MY_ALLOWED?MY_ALLOWED.role:null,latency_ms:latency,pwa:isPWA,sw:swOK,layout:isDesktop()?'desktop':'mobile',
+    data:{leads:DATA.leads.length,feed:DATA.feed.length,zones:DATA.zones.length,allowed:DATA.allowed.length,lastLeadAt:lastLead||null},
+    pipeline:pl,online:navigator.onLine,listeners:UNSUB.length,
+    screen:screen.width+'x'+screen.height,ua:navigator.userAgent.slice(0,80),log:CLIENT_LOG.slice(0,15)};
 }
 async function copyTechReport(){
   if(!TECH_REPORT)renderHealth();
