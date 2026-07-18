@@ -23,7 +23,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt google-cloud-firestore google-auth
+
+      # ═══ חדש: מושך את פרופיל הסינון מהאתר (Firestore) לפני הסריקה ═══
+      - name: Sync profile from Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python firestore_sync.py profile || echo "profile sync skipped"
 
       - name: Run web watcher (Google Alerts RSS)
         env:
@@ -42,6 +48,22 @@ jobs:
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ -n "${EMAIL_USER}" ]; then python email_ingest.py; else echo "email ingest skipped"; fi
+
+      # ═══ חדש: מעלה ממצאים חדשים ל-Firestore (הפיד באתר) ═══
+      - name: Sync findings to Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python firestore_sync.py findings || echo "findings sync skipped"
+
+      # ═══ חדש: פעימת-לב יומית בטלגרם (בריצה של 05:00 UTC = 08:00 בישראל) ═══
+      - name: Daily heartbeat
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TELEGRAM_BOT_TOKEN:       ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:         ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "$(date -u +%H)" = "05" ]; then python firestore_sync.py heartbeat; else echo "not heartbeat hour"; fi
 
       - name: Persist state (findings + seen)
         run: |
