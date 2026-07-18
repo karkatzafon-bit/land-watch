@@ -272,7 +272,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
       <div class="lg-fld"><label>אימייל</label><input id="lgEmail" type="email" placeholder="you@gmail.com" autocomplete="email"></div>
       <div class="lg-fld"><label>סיסמה</label><input id="lgPass" type="password" placeholder="••••••••"></div>
       <button class="lg-btn" onclick="emailLogin()">כניסה למפקדה →</button>
-      <div class="lg-note"><a href="#" onclick="resetPass();return false">שכחתי סיסמה</a></div>
+      <div class="lg-note"><a href="#" onclick="resetPass();return false">שכחתי סיסמה</a> · <a href="#" onclick="emailSignup();return false">משתמש חדש? הרשמה</a></div>
     </div>
     <div id="recaptcha-holder"></div>
   </div>
@@ -347,6 +347,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
     <button class="sbitem" data-s="profile" onclick="nav('profile')">⚙️ פרופיל</button>
     <button class="sbitem" data-s="health" onclick="nav('health')">🩺 מצב</button>
     <button class="sbitem" data-s="users" onclick="nav('users')">👥 משתמשים</button>
+    <button class="sbitem" data-s="more" onclick="nav('more')">☰ עוד</button>
     <div id="sbUser"><div class="av" id="sbAv">?</div><div><b id="sbName">—</b><span id="sbRole"></span></div></div>
   </div>
 
@@ -425,7 +426,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0 · "משמר הירדן"';
+const APP_VERSION='3.0.1 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -509,10 +510,20 @@ async function emailLogin(){
   if(!em||!ps){ lgErr('מלא מייל וסיסמה'); return; }
   try{ await AUTH.signInWithEmailAndPassword(em,ps); }
   catch(e){
-    if(e.code==='auth/user-not-found'){ // משתמש ראשון — ניצור לו חשבון (ההרשאה תיבדק מול allowed)
+    if(e.code==='auth/user-not-found'){
       try{ await AUTH.createUserWithEmailAndPassword(em,ps); }catch(e2){ lgErr('הרשמה נכשלה: '+(e2.message||e2.code)); }
-    } else lgErr(e.code==='auth/wrong-password'?'סיסמה שגויה':'שגיאה: '+(e.message||e.code));
+    } else if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password')
+      lgErr('סיסמה שגויה. משתמש חדש? לחץ "הרשמה" למטה. שכחת? "שכחתי סיסמה".');
+    else lgErr('שגיאה: '+(e.message||e.code));
   }
+}
+async function emailSignup(){
+  const em=document.getElementById('lgEmail').value.trim().toLowerCase();
+  const ps=document.getElementById('lgPass').value;
+  if(!em||!ps){ lgErr('מלא מייל וסיסמה (6+ תווים) ואז לחץ הרשמה'); return; }
+  try{ await AUTH.createUserWithEmailAndPassword(em,ps); }
+  catch(e){ lgErr(e.code==='auth/email-already-in-use'?'המייל כבר רשום — נסה כניסה רגילה או "שכחתי סיסמה"':
+    e.code==='auth/weak-password'?'סיסמה חלשה — לפחות 6 תווים':'הרשמה נכשלה: '+(e.message||e.code)); }
 }
 async function resetPass(){ const em=document.getElementById('lgEmail').value.trim();
   if(!em){ lgErr('כתוב את המייל ואז לחץ "שכחתי סיסמה"'); return; }
@@ -569,6 +580,7 @@ let MAP=null,BASE=null,SAT=null,SATON=false,MARKERS=[],ZLAYERS=[],MYPOS=null,MYM
 const ZONE_COLORS=['#0E8A52','#7E5FA4','#2E6E7E','#C89A1F','#C0492E','#4A5D9E'];
 function initMap(){
   MAP=L.map('map',{zoomControl:false,attributionControl:false}).setView([33.02,35.58],11);
+  if(isDesktop())L.control.zoom({position:'bottomright'}).addTo(MAP);
   BASE=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(MAP);
   SAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
   MAP.on('click',mapClick);
@@ -1273,6 +1285,10 @@ async function checkUpdate(){
 }
 setInterval(checkUpdate,180000);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden)checkUpdate(); });
+/* תיקון 3.0.1: המפה מתעדכנת כשמשנים גודל חלון / מסובבים מסך */
+let _rszT=null;
+window.addEventListener('resize',()=>{ clearTimeout(_rszT);
+  _rszT=setTimeout(()=>{ if(MAP){ MAP.invalidateSize(); renderMarkers(); } },250); });
 
 /* ─── אתחול ─── */
 function bootApp(){
