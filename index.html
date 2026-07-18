@@ -461,7 +461,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.6 · "משמר הירדן"';
+const APP_VERSION='3.0.7 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -658,9 +658,19 @@ function renderMarkers(){
 /* נקודות גזרה נשמרות כאובייקטים {la,ln} (Firestore לא תומך מערך-בתוך-מערך) */
 function zPts(z){ return (z.points||[]).map(p=>Array.isArray(p)?p:[p.la??p.lat,p.ln??p.lng])
   .filter(p=>p[0]!=null&&p[1]!=null); }
+/* 👁 הסתרת גזרות — העדפה מקומית של המכשיר (לא משפיעה על השותף) */
+let ZHIDE=new Set(JSON.parse(store.get('kz_zhide')||'[]'));
+function zoneHidden(id){ return ZHIDE.has(id); }
+function toggleZoneVis(id){
+  if(ZHIDE.has(id))ZHIDE.delete(id); else ZHIDE.add(id);
+  store.set('kz_zhide',JSON.stringify([...ZHIDE]));
+  renderZones(); openZonesManager();
+  toast(ZHIDE.has(id)?'🙈 הגזרה הוסתרה (אצלך בלבד)':'👁 הגזרה מוצגת');
+}
 function renderZones(){
   ZLAYERS.forEach(z=>MAP.removeLayer(z)); ZLAYERS=[];
   DATA.zones.forEach((z,i)=>{
+    if(zoneHidden(z.id))return;
     const pts=zPts(z); if(pts.length<3)return;
     const col=z.color||ZONE_COLORS[i%ZONE_COLORS.length];
     const poly=L.polygon(pts,{color:col,weight:2.5,dashArray:'6 5',fillColor:col,fillOpacity:.12}).addTo(MAP);
@@ -696,16 +706,17 @@ function delZone(id){ if(!confirm('למחוק את הגזרה? (הלידים ש�
 /* 🗂️ חלונית ניהול גזרות */
 function openZonesManager(){
   openSheet(`<div class="grab"></div><h3>🗂️ ניהול גזרות</h3>
-    ${DATA.zones.length?DATA.zones.map(z=>{ const col=z.color||'#0E8A52';
-      return `<div class="card" style="border-inline-start:5px solid ${col}">
+    ${DATA.zones.length?DATA.zones.map(z=>{ const col=z.color||'#0E8A52', hid=zoneHidden(z.id);
+      return `<div class="card" style="border-inline-start:5px solid ${col};${hid?'opacity:.55':''}">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <b style="font-size:14px">${esc(z.name||'גזרה')}</b>
+          <b style="font-size:14px">${hid?'🙈 ':''}${esc(z.name||'גזרה')}</b>
           <span class="mutetxt">${areaDunam(zPts(z)).toFixed(0)} דונם · ${zoneLeadCount(z)} לידים</span></div>
         <div style="display:flex;gap:5px;margin:9px 0 10px">
           ${ZONE_COLORS.map(c=>`<button onclick="setZoneColor('${z.id}','${c}')" title="בחר צבע"
             style="width:30px;height:30px;border-radius:50%;background:${c};border:${c===col?'3px solid var(--ink)':'2px solid #fff'};box-shadow:0 1px 4px rgba(0,0,0,.2)"></button>`).join('')}
         </div>
-        <div style="display:flex;gap:7px">
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="pkb" onclick="toggleZoneVis('${z.id}')">${hid?'👁 הצג':'👁 הסתר'}</button>
           <button class="pkb" onclick="closeSheet();nav('map');MAP.flyTo([${zoneCenter(z)}],12)">🎯 קפוץ</button>
           <button class="pkb" onclick="renameZone('${z.id}')">✏️ שם</button>
           <button class="pkb" style="background:var(--clay-l);color:var(--clay)" onclick="delZone('${z.id}')">🗑️</button>
