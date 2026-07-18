@@ -69,6 +69,11 @@ a{color:var(--em);text-decoration:none}
   justify-content:center;font-size:15px;box-shadow:var(--shadow-s);position:relative}
 .iconbtn .bdg{position:absolute;top:-3px;inset-inline-end:-3px;min-width:17px;height:17px;border-radius:999px;
   background:var(--clay);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+#mapSearch{display:flex;align-items:center;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+  border-radius:999px;box-shadow:var(--shadow-s);padding:3px 4px 3px 10px;gap:2px;flex:1;max-width:300px;margin:0 10px}
+#mapSearch input{border:none;background:none;outline:none;font-size:13.5px;font-weight:600;width:100%;min-width:60px}
+#mapSearch button{font-size:14px;padding:5px 8px}
+@media (max-width:900px){ .brandchip{display:none} #mapSearch{margin-inline-start:0} }
 
 /* כלי מפה (טלפון+מחשב) */
 #mapTools{position:absolute;z-index:20;top:calc(64px + var(--safe-t));inset-inline-start:12px;display:flex;flex-direction:column;gap:8px}
@@ -218,12 +223,27 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
   opacity:0;transition:.25s;z-index:1500;pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* סרגל ציור */
+#drawbar{position:absolute;z-index:26;top:calc(64px + var(--safe-t));left:50%;transform:translateX(-50%);
+  background:#14201A;color:#fff;border-radius:999px;padding:8px 10px 8px 16px;display:none;align-items:center;gap:9px;
+  box-shadow:var(--shadow);font-size:13px;white-space:nowrap}
+#drawbar.on{display:flex}
+#drawbar b{font-size:12.5px}
+#drawbar span{font-size:11.5px;opacity:.75}
+#drawbar button{color:#fff;font-size:13px;font-weight:700;border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.12)}
+#drawbar button.dsave{background:var(--em)}
+@media (min-width:901px){ #drawbar{left:calc(50% + 106px)} }
+
 /* תג מחיר על המפה */
 .pricetag{background:#14201A;color:#fff;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;
   box-shadow:0 3px 10px rgba(0,0,0,.25);white-space:nowrap;border:none;font-family:'Heebo',sans-serif}
 .pricetag.t1{background:var(--t1)}.pricetag.t2{background:var(--t2)}.pricetag.t3{background:var(--t3)}
 .pricetag.agri{background:var(--clay)}
 .leaflet-div-icon{background:none;border:none}
+.zonelbl{background:#fff;border:none;border-radius:999px;padding:3px 11px;font-family:'Heebo',sans-serif;
+  font-size:11px;font-weight:800;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.18);
+  pointer-events:none;direction:rtl}
+.zonelbl::before{display:none}
 .leaflet-popup-content-wrapper{border-radius:16px;box-shadow:var(--shadow)}
 .leaflet-popup-content{font-family:'Heebo',sans-serif;direction:rtl;text-align:right;margin:13px 15px;min-width:210px}
 .leaflet-popup-content b{font-size:14px}
@@ -231,7 +251,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 .leaflet-popup-content .pbtns{display:flex;gap:6px;flex-wrap:wrap}
 
 /* תמונת מצב צפה (מחשב) */
-#dashpanel{position:absolute;z-index:25;top:64px;inset-inline-end:14px;width:250px;background:rgba(255,255,255,.97);
+#dashpanel{position:absolute;z-index:25;top:64px;inset-inline-end:14px;width:264px;max-height:calc(100% - 90px);overflow-y:auto;background:rgba(255,255,255,.97);
   backdrop-filter:blur(8px);border-radius:var(--r);padding:13px;box-shadow:var(--shadow);display:none}
 #dashpanel h4{margin:0 0 10px;font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
 #dashpanel h4 button{color:var(--muted);font-size:14px}
@@ -296,6 +316,11 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
   <!-- בר עליון -->
   <div id="topbar">
     <div class="brandchip">🎖️ מפקדת קרקעות</div>
+    <div id="mapSearch">
+      <input id="msq" list="msTowns" placeholder="🔍 יישוב…" onkeydown="if(event.key==='Enter')mapSearchGo()">
+      <button onclick="mapSearchGo()">🔍</button>
+      <datalist id="msTowns"></datalist>
+    </div>
     <div style="display:flex;gap:8px">
       <button class="iconbtn" id="dashBtn" onclick="toggleDash()" title="תמונת מצב">📊</button>
       <button class="iconbtn" onclick="openBell()" title="עדכונים">🔔<span class="bdg hide" id="bellBadge"></span></button>
@@ -307,6 +332,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
     <h4>📊 תמונת מצב<button onclick="toggleDash()">✕</button></h4>
     <div class="kpirow" id="dashKpis"></div>
     <div id="dashLines"></div>
+    <div id="dashLeads"></div>
   </div>
 
   <!-- כלי מפה -->
@@ -323,6 +349,14 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
   </div>
 
   <button id="fab" onclick="openQuickAdd()" title="ליד חדש">➕</button>
+
+  <!-- סרגל ציור (גזרה/מדידות) -->
+  <div id="drawbar">
+    <b id="drawLbl"></b><span id="drawCnt"></span>
+    <button onclick="undoPoint()" title="בטל נקודה אחרונה">↩️</button>
+    <button class="dsave" onclick="endTool()">✓ שמור</button>
+    <button onclick="cancelTool()" title="ביטול">✕</button>
+  </div>
 
   <!-- סרגל תחתון (טלפון) -->
   <div id="bottomnav">
@@ -425,7 +459,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.2 · "משמר הירדן"';
+const APP_VERSION='3.0.5 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -453,6 +487,11 @@ function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmt(n){ return Number(n||0).toLocaleString('en-US'); }
 function fmtK(n){ n=Number(n||0); return n>=1e6?(n/1e6).toFixed(n%1e6?2:0).replace(/\.?0+$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n); }
+function fmtDue(d){ if(!d)return ''; const s=String(d);
+  if(s.includes('-'))return s.split('-').reverse().join('/');
+  const t=new Date(Number(d)||s); return isNaN(t)?s:t.toLocaleDateString('he-IL'); }
+function dueDate(d){ if(!d)return null; const s=String(d);
+  const t=s.includes('-')?new Date(s+'T23:59'):new Date(Number(d)||s); return isNaN(t)?null:t; }
 const isDesktop=()=>window.matchMedia('(min-width:901px)').matches;
 
 /* ─── יישובים (מהגרסה הקודמת — נשמר) ─── */
@@ -543,10 +582,10 @@ function subscribeAll(){
   UNSUB.forEach(u=>u()); UNSUB.length=0;
   UNSUB.push(DB.collection('leads').onSnapshot(s=>{ DATA.leads=s.docs.map(d=>({id:d.id,...d.data()}));
     renderMarkers(); refreshScreens(); updateBell(); renderDash(); },e=>clog('error','leads sub '+e.code)));
-  UNSUB.push(DB.collection('feed').orderBy('at','desc').limit(250).onSnapshot(s=>{
-    DATA.feed=s.docs.map(d=>({id:d.id,...d.data()})); refreshScreens(); updateFeedBadge(); renderDash(); },
-    e=>{ clog('error','feed sub '+e.code);
-      UNSUB.push(DB.collection('feed').limit(250).onSnapshot(s2=>{ DATA.feed=s2.docs.map(d=>({id:d.id,...d.data()})); refreshScreens(); },()=>{})); }));
+  UNSUB.push(DB.collection('feed').limit(300).onSnapshot(s=>{
+    DATA.feed=s.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.at||b._syncedAt||b.ts||0)-(a.at||a._syncedAt||a.ts||0));
+    refreshScreens(); updateFeedBadge(); renderDash(); },e=>clog('error','feed sub '+e.code)));
   UNSUB.push(DB.collection('zones').onSnapshot(s=>{ DATA.zones=s.docs.map(d=>({id:d.id,...d.data()})); renderZones(); refreshScreens(); },e=>clog('error','zones '+e.code)));
   UNSUB.push(DB.collection('profile').doc('main').onSnapshot(s=>{ DATA.profile=s.exists?s.data():{}; refreshScreens(); },e=>clog('error','profile '+e.code)));
   UNSUB.push(DB.collection('sprint').doc('main').onSnapshot(s=>{ DATA.sprint=s.exists?s.data():{}; refreshScreens(); renderDash(); },e=>clog('error','sprint '+e.code)));
@@ -575,7 +614,7 @@ function distKm(a,b){ const R=6371,dLa=(b[0]-a[0])*Math.PI/180,dLo=(b[1]-a[1])*M
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); }
 
 /* ─── מפה ─── */
-let MAP=null,BASE=null,SAT=null,SATON=false,MARKERS=[],ZLAYERS=[],MYPOS=null,MYMARK=null,WATCHID=null;
+let MAP=null,BASE=null,SAT=null,SATLBL=null,MAPMODE=0,MARKERS=[],ZLAYERS=[],MYPOS=null,MYMARK=null,WATCHID=null;
 const ZONE_COLORS=['#0E8A52','#7E5FA4','#2E6E7E','#C89A1F','#C0492E','#4A5D9E'];
 function initMap(){
   MAP=L.map('map',{zoomControl:false,attributionControl:false}).setView([33.02,35.58],11);
@@ -583,6 +622,7 @@ function initMap(){
   L.control.scale({metric:true,imperial:false,position:'bottomleft'}).addTo(MAP);
   BASE=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(MAP);
   SAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+  SATLBL=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
   MAP.on('click',mapClick);
   let pressT=null;
   MAP.on('mousedown touchstart',e=>{ pressT=setTimeout(()=>{ try{
@@ -591,8 +631,14 @@ function initMap(){
     if(ll&&!TOOL)openQuickAdd(ll); }catch(x){} },650); });
   MAP.on('mouseup touchend move drag zoomstart',()=>clearTimeout(pressT));
 }
-function toggleSat(){ SATON=!SATON; document.getElementById('toolSat').classList.toggle('on',SATON);
-  if(SATON){MAP.removeLayer(BASE);SAT.addTo(MAP);}else{MAP.removeLayer(SAT);BASE.addTo(MAP);} }
+function toggleSat(){ // תלת-מצבי: מפה → לוויין → משולבת (לוויין+שמות)
+  MAPMODE=(MAPMODE+1)%3;
+  [BASE,SAT,SATLBL].forEach(ly=>{ if(MAP.hasLayer(ly))MAP.removeLayer(ly); });
+  const btn=document.getElementById('toolSat');
+  if(MAPMODE===0){ BASE.addTo(MAP); btn.classList.remove('on'); btn.textContent='🛰️'; toast('🗺️ מפה'); }
+  else if(MAPMODE===1){ SAT.addTo(MAP); btn.classList.add('on'); btn.textContent='🛰️'; toast('🛰️ לוויין'); }
+  else{ SAT.addTo(MAP); SATLBL.addTo(MAP); btn.classList.add('on'); btn.textContent='🗺️'; toast('🛰️+🗺️ מפה משולבת'); }
+}
 function renderMarkers(){
   MARKERS.forEach(m=>MAP.removeLayer(m)); MARKERS=[];
   DATA.leads.forEach(l=>{
@@ -600,7 +646,9 @@ function renderMarkers(){
     const t=tierOf(l), agri=isAgri(l);
     const cls=agri&&!l.agriAck?'agri':(t?'t'+Math.min(t,3):'');
     const ic=L.divIcon({html:`<button class="pricetag ${cls}">${agri?'⚠️ ':''}${l.price?fmtK(l.price):'?'}</button>`,iconAnchor:[22,14]});
-    const m=L.marker(c,{icon:ic}).addTo(MAP).on('click',()=>openLeadPopup(l.id));
+    const m=L.marker(c,{icon:ic}).addTo(MAP).on('click',()=>{
+      if(TOOL){ mapClick({latlng:L.latLng(c[0],c[1])}); return; }   // בזמן ציור — הליד הוא נקודה
+      openLeadPopup(l.id); });
     MARKERS.push(m);
   });
 }
@@ -610,10 +658,32 @@ function renderZones(){
     if(!z.points||z.points.length<3)return;
     const col=z.color||ZONE_COLORS[i%ZONE_COLORS.length];
     const poly=L.polygon(z.points,{color:col,weight:2.5,dashArray:'6 5',fillColor:col,fillOpacity:.12}).addTo(MAP);
-    poly.bindTooltip(z.name||('גזרה '+(i+1)),{permanent:true,direction:'center',className:'pricetag'});
+    poly.bindTooltip(z.name||('גזרה '+(i+1)),{permanent:true,direction:'center',className:'zonelbl'});
+    poly.on('click',e=>{ if(TOOL){ mapClick(e); return; } L.DomEvent.stopPropagation(e); openZonePopup(z.id); });
     ZLAYERS.push(poly);
   });
 }
+/* ניהול גזרה — לחיצה על גזרה קיימת */
+function openZonePopup(id){
+  const z=DATA.zones.find(x=>x.id===id); if(!z)return;
+  const center=z.points.reduce((a,p)=>[a[0]+p[0]/z.points.length,a[1]+p[1]/z.points.length],[0,0]);
+  L.popup({maxWidth:260}).setLatLng(center).setContent(`
+    <b>🗺️ ${esc(z.name||'גזרה')}</b>
+    <div class="pm">${areaDunam(z.points).toFixed(0)} דונם · ${DATA.leads.filter(l=>{const c=leadCoords(l);return c&&pointInPoly(c,z.points);}).length} לידים בפנים</div>
+    <div class="pbtns">
+      <button class="pkb" onclick="renameZone('${z.id}')">✏️ שם</button>
+      <button class="pkb" onclick="recolorZone('${z.id}')">🎨 צבע</button>
+      <button class="pkb" style="background:var(--clay-l);color:var(--clay)" onclick="delZone('${z.id}')">🗑️ מחק</button>
+    </div>`).openOn(MAP);
+}
+function renameZone(id){ const z=DATA.zones.find(x=>x.id===id); if(!z)return;
+  const n=prompt('שם הגזרה:',z.name||''); if(n===null)return;
+  DB.collection('zones').doc(id).update({name:n||'גזרה',by:WHO(),at:Date.now()}); MAP.closePopup(); toast('שם עודכן ✓'); }
+function recolorZone(id){ const z=DATA.zones.find(x=>x.id===id); if(!z)return;
+  const i=(ZONE_COLORS.indexOf(z.color)+1)%ZONE_COLORS.length;
+  DB.collection('zones').doc(id).update({color:ZONE_COLORS[i],by:WHO(),at:Date.now()}); toast('🎨 צבע הוחלף'); }
+function delZone(id){ if(!confirm('למחוק את הגזרה? (הלידים שבתוכה לא נמחקים)'))return;
+  DB.collection('zones').doc(id).delete(); MAP.closePopup(); toast('גזרה נמחקה'); }
 function zoneOf(l){ const c=leadCoords(l); if(!c)return null;
   for(const z of DATA.zones){ if(z.points&&z.points.length>2&&pointInPoly(c,z.points))return z; } return null; }
 function pointInPoly(p,poly){ let inside=false;
@@ -624,37 +694,56 @@ function pointInPoly(p,poly){ let inside=false;
 
 /* כלים: מדידה + ציור גזרה */
 let TOOL=null,TPTS=[],TLAYER=null;
+const TOOL_LBL={dist:'📐 מדידת מרחק',area:'📏 מדידת שטח',zone:'✏️ ציור גזרה'};
 function toggleToolbox(){ document.getElementById('toolbox').classList.toggle('open');
   document.getElementById('tbToggle').classList.toggle('on'); }
 function startTool(t){
-  if(TOOL===t){ endTool(); return; }
-  endTool(); TOOL=t; TPTS=[];
-  ['toolDist','toolArea','toolZone'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  if(TOOL===t){ cancelTool(); return; }   // לחיצה חוזרת על הכלי = ביטול
+  cancelTool(); TOOL=t; TPTS=[];
   document.getElementById(t==='dist'?'toolDist':t==='area'?'toolArea':'toolZone').classList.add('on');
-  toast(t==='dist'?'📐 לחץ נקודות על המפה · לחיצה על הכלי שוב = סיום':
-        t==='area'?'📏 הקף את השטח בנקודות · לחיצה שוב = סיום':
-        '✏️ הקף את הגזרה בנקודות · לחיצה שוב = שמירה');
+  document.getElementById('drawbar').classList.add('on');
+  document.getElementById('drawLbl').textContent=TOOL_LBL[t];
+  drawInfo();
+  if(MAP)MAP.doubleClickZoom.disable();
+  toast(t==='zone'?'✏️ הקף את הגזרה בלחיצות על המפה, ואז ✓ שמור':'לחץ נקודות על המפה · ✓ לסיום');
 }
-function endTool(){
-  if(TOOL==='zone'&&TPTS.length>2){
-    const name=prompt('שם הגזרה? (למשל: עמק החולה)','גזרה חדשה')||'גזרה';
-    const color=ZONE_COLORS[DATA.zones.length%ZONE_COLORS.length];
-    DB.collection('zones').add({name,color,points:TPTS,by:WHO(),at:Date.now()});
-    toast('✏️ גזרה "'+name+'" נשמרה ✓');
-  }
+function drawInfo(){
+  let extra='';
+  if(TOOL==='dist'&&TPTS.length>1){ let d=0; for(let i=1;i<TPTS.length;i++)d+=distKm(TPTS[i-1],TPTS[i]);
+    extra=' · '+(d<1?Math.round(d*1000)+' מ׳':d.toFixed(2)+' ק״מ'); }
+  if((TOOL==='area'||TOOL==='zone')&&TPTS.length>2)extra=' · '+areaDunam(TPTS).toFixed(1)+' דונם';
+  document.getElementById('drawCnt').textContent=TPTS.length+' נק׳'+extra;
+}
+function redrawTool(){
+  if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null;}
+  if(!TPTS.length)return;
+  if(TOOL==='dist')TLAYER=L.polyline(TPTS,{color:'#0a7ea8',weight:3}).addTo(MAP);
+  else TLAYER=L.polygon(TPTS,{color:TOOL==='zone'?'#0E8A52':'#C89A1F',weight:2.5,dashArray:'6 5',fillOpacity:.12}).addTo(MAP);
+}
+function undoPoint(){ TPTS.pop(); redrawTool(); drawInfo(); }
+function cancelTool(){
   TOOL=null;TPTS=[];
   if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null;}
   ['toolDist','toolArea','toolZone'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('drawbar').classList.remove('on');
+  if(MAP)MAP.doubleClickZoom.enable();
+}
+function endTool(){
+  if(TOOL==='zone'){
+    if(TPTS.length<3){ toast('צריך לפחות 3 נקודות לגזרה'); return; }
+    const name=prompt('שם הגזרה? (למשל: עמק החולה)','גזרה חדשה');
+    if(name===null)return;   // ביטול prompt — ממשיכים לצייר
+    const color=ZONE_COLORS[DATA.zones.length%ZONE_COLORS.length];
+    DB.collection('zones').add({name:name||'גזרה',color,points:TPTS,by:WHO(),at:Date.now()})
+      .then(()=>toast('✏️ גזרה "'+(name||'גזרה')+'" נשמרה ✓'))
+      .catch(e=>toast('שמירה נכשלה: '+e.code));
+  }
+  cancelTool();
 }
 function mapClick(e){
   if(!TOOL)return;
   TPTS.push([e.latlng.lat,e.latlng.lng]);
-  if(TLAYER)MAP.removeLayer(TLAYER);
-  if(TOOL==='dist'){ TLAYER=L.polyline(TPTS,{color:'#0a7ea8',weight:3}).addTo(MAP);
-    let d=0; for(let i=1;i<TPTS.length;i++)d+=distKm(TPTS[i-1],TPTS[i]);
-    if(TPTS.length>1)toast('📐 '+(d<1?Math.round(d*1000)+' מ׳':d.toFixed(2)+' ק״מ')); }
-  else{ TLAYER=L.polygon(TPTS,{color:TOOL==='zone'?'#0E8A52':'#C89A1F',weight:2.5,dashArray:'6 5',fillOpacity:.12}).addTo(MAP);
-    if(TOOL==='area'&&TPTS.length>2){ toast('📏 '+areaDunam(TPTS).toFixed(2)+' דונם'); } }
+  redrawTool(); drawInfo();
 }
 function areaDunam(pts){ // shoelace על מטרים מקורבים
   const R=6371000, lat0=pts[0][0]*Math.PI/180;
@@ -861,8 +950,12 @@ function nav(s){
 }
 function refreshScreens(){ if(CUR!=='map')renderScreen(CUR); }
 function renderScreen(s){
-  ({leads:renderLeads,tour:renderTour,feed:renderFeed,reports:renderReports,sprint:renderSprint,
-    profile:renderProfile,health:renderHealth,users:renderUsers,more:renderMore}[s]||(()=>{}))();
+  try{
+    ({leads:renderLeads,tour:renderTour,feed:renderFeed,reports:renderReports,sprint:renderSprint,
+      profile:renderProfile,health:renderHealth,users:renderUsers,more:renderMore}[s]||(()=>{}))();
+  }catch(e){ clog('error','render '+s+': '+(e.message||e));
+    const el=document.querySelector('#scrn-'+s+' .scrn-body');
+    if(el)el.innerHTML='<div class="card" style="border-inline-start:4px solid var(--clay)"><b>⚠️ שגיאה בטעינת המסך</b><div class="mutetxt" style="margin-top:5px">'+esc(e.message||e)+'<br>העתק דוח טכני מ-🩺 מצב ושלח לקלוד.</div></div>'; }
 }
 
 /* ─── מסך לידים ─── */
@@ -888,7 +981,7 @@ function leadRowHtml(l){
       <div class="lr-badges">${tierBadge(l)}
         <span class="bdgx" style="background:${ST_COLOR[l.status]};color:#fff">${stLbl(l.status)}</span>
         ${agri?(l.agriAck?'<span class="bdgx warn">⚠️ אושר</span>':'<span class="bdgx warn">⚠️ חקלאי</span>'):''}
-        ${l.due?`<span class="bdgx ${new Date(l.due)<new Date()?'warn':''}">⏰ ${l.due.split('-').reverse().join('/')}</span>`:''}
+        ${l.due?`<span class="bdgx ${(dueDate(l.due)||new Date(9e15))<new Date()?'warn':''}">⏰ ${fmtDue(l.due)}</span>`:''}
       </div>
     </div>
     <div class="lr-acts">
@@ -1208,14 +1301,16 @@ function renderMore(){
       <div class="mutetxt">מושך את הלידים/פיד/פרופיל מהקבצים הישנים בריפו ומכניס ל-Firebase. מריצים פעם אחת בלבד.</div>
       <button class="btn" style="margin-top:9px" onclick="importOld()">▶️ הרץ ייבוא חד-פעמי</button></div>`:''}`;
 }
-async function doSearch(){
-  const q=document.getElementById('srchQ').value.trim(); if(!q)return;
-  if(townCoords(q)){ nav('map'); MAP.flyTo(townCoords(q),14); return; }
+async function searchPlace(q){
+  if(!q)return;
+  if(townCoords(q)){ nav('map'); MAP.flyTo(townCoords(q),14); toast('📍 '+q); return; }
   try{ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=il&q='+encodeURIComponent(q));
     const res=await r.json();
     if(res[0]){ nav('map'); MAP.flyTo([+res[0].lat,+res[0].lon],14); toast('📍 '+res[0].display_name.split(',')[0]); }
     else toast('לא נמצא'); }catch(e){ toast('החיפוש נכשל'); }
 }
+function doSearch(){ searchPlace(document.getElementById('srchQ').value.trim()); }
+function mapSearchGo(){ const el=document.getElementById('msq'); searchPlace(el.value.trim()); el.blur(); }
 
 /* ייבוא חד-פעמי מהקבצים הישנים */
 async function importOld(){
@@ -1232,7 +1327,8 @@ async function importOld(){
     const fnd=await (await fetch(base+'findings.json?t='+Date.now())).json().catch(()=>[]);
     const items=Array.isArray(fnd)?fnd:(fnd.findings||[]);
     for(const f of items.slice(0,250)){
-      const id=String(f.id||f.hash||Math.random().toString(36).slice(2)).slice(0,60);
+      const id=String(f.id||f.hash||Math.random().toString(36).slice(2)).replace(/[\/\s]/g,'_').slice(0,60);
+      if(!f.at)f.at=Number(f.ts)||Number(f.time)||Date.now();   // חותמת זמן אחידה
       const ref=DB.collection('feed').doc(id);
       if(!(await ref.get()).exists){ await ref.set(f); n++; }
     }
@@ -1249,8 +1345,9 @@ function partnerEvents(){
   const lastSeen=Number(store.get('kz_bellseen')||0), me=WHO(), ev=[];
   DATA.leads.forEach(l=>{
     (l.log||[]).forEach(e=>{ if(e.by&&e.by!==me&&e.at>lastSeen)ev.push({t:e.at,txt:`🤝 ${e.by}: ${stLbl(e.st)} — ${l.title||''}${e.note?' · "'+e.note+'"':''}`}); });
-    if(l.due){ const d=new Date(l.due+'T09:00'); const left=(d-Date.now())/86400000;
-      if(left<=2)ev.push({t:d.getTime(),txt:`⏰ ${left<0?'עבר!':'מתקרב:'} ${l.title||''} — ${l.due.split('-').reverse().join('/')}`}); }
+    const dd=dueDate(l.due);
+    if(dd){ const left=(dd-Date.now())/86400000;
+      if(left<=2)ev.push({t:dd.getTime(),txt:`⏰ ${left<0?'עבר!':'מתקרב:'} ${l.title||''} — ${fmtDue(l.due)}`}); }
   });
   return ev.sort((a,b)=>b.t-a.t);
 }
@@ -1280,8 +1377,8 @@ function dashKpisHtml(){
 }
 function dashLinesHtml(){
   const lines=[];
-  DATA.leads.forEach(l=>{ if(l.due&&(new Date(l.due+'T23:59')-Date.now())<86400000*5)
-    lines.push(`<div class="dline warn">⏰ ${esc(l.title||'')} — עד ${l.due.split('-').reverse().join('/')}</div>`); });
+  DATA.leads.forEach(l=>{ const dd=dueDate(l.due); if(dd&&(dd-Date.now())<86400000*5)
+    lines.push(`<div class="dline warn">⏰ ${esc(l.title||'')} — עד ${fmtDue(l.due)}</div>`); });
   partnerEvents().slice(0,3).forEach(e=>lines.push(`<div class="dline">${esc(e.txt).slice(0,70)}</div>`));
   if(DATA.sprint&&DATA.sprint.deadline){ const d=Math.ceil((new Date(DATA.sprint.deadline+'T23:59')-Date.now())/86400000);
     lines.push(`<div class="dline">🎯 ${d} ימים לדדליין הספרינט</div>`); }
@@ -1289,7 +1386,17 @@ function dashLinesHtml(){
 }
 function renderDash(){ if(!document.getElementById('dashpanel').classList.contains('dshow'))return;
   document.getElementById('dashKpis').innerHTML=dashKpisHtml();
-  document.getElementById('dashLines').innerHTML=dashLinesHtml(); }
+  document.getElementById('dashLines').innerHTML=dashLinesHtml();
+  // רשימת לידים מסכמת — לחיצה קופצת לליד על המפה
+  const ls=DATA.leads.slice().sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,7);
+  document.getElementById('dashLeads').innerHTML=ls.length?
+    '<div style="font-size:11px;font-weight:800;color:var(--muted);margin:8px 0 5px">📋 לידים אחרונים</div>'+
+    ls.map(l=>{ const c=leadCoords(l);
+      return `<div class="dline" style="cursor:pointer;display:flex;justify-content:space-between;gap:6px"
+        onclick="${c?`MAP.flyTo([${c[0]},${c[1]}],15);openLeadPopup('${l.id}')`:`nav('leads')`}">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tierOf(l)===1?'🟢':tierOf(l)===2?'🟡':'🔴'} ${esc(l.title||'ליד')}</span>
+        <b style="flex-shrink:0">${l.price?fmtK(l.price):''}</b></div>`; }).join(''):'';
+}
 
 /* ─── עדכון אוטומטי (version.json שנחתם ע"י ה-Action) ─── */
 window.BUILD_INFO=null;
@@ -1319,6 +1426,7 @@ function bootApp(){
   // שם משתמש ב-sidebar
   document.getElementById('sbName').textContent=WHO();
   document.getElementById('sbAv').textContent=(WHO()[0]||'?');
+  document.getElementById('msTowns').innerHTML=Object.keys(TOWNS).map(t=>`<option value="${esc(t)}">`).join('');
   document.getElementById('sbRole').textContent=MY_ALLOWED&&MY_ALLOWED.role==='admin'?'מנהל · מחובר':'שותף · מחובר';
   if(isDesktop()){ document.getElementById('dashpanel').classList.add('dshow'); setTimeout(renderDash,800); }
   checkUpdate();
