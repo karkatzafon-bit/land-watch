@@ -1,5 +1,19 @@
 [
  {
+  "id": "c2cf8a85cf14b4ae",
+  "ts": 1784580909,
+  "source": "rmi",
+  "kind": "listing",
+  "title": "מנכ\"ל משרד התיירות קורא לגופי המגזר הציבורי: \"קיימו בצפון את הנופשים והפעילויות הארגוניות\" - Gov.il",
+  "link": "https://www.gov.il/he/pages/north-area-for-workers-vacations-organizational-activities",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "1b2713048ba807d4",
   "ts": 1784564203,
   "source": "web",
