@@ -1,5 +1,19 @@
 [
  {
+  "id": "1b2713048ba807d4",
+  "ts": 1784564203,
+  "source": "web",
+  "kind": "listing",
+  "title": "דלק נכסים נכנסת לגליל ים: תקים עם הקיבוץ מתחם מסחר ותעסוקה בהשקעה של כ-360 מלש\"ח",
+  "link": "https://www.nadlancenter.co.il/article/14994",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "33f1ba54ddba0fff",
   "ts": 1784400001,
   "source": "yad2",
