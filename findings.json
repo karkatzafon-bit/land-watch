@@ -1,5 +1,19 @@
 [
  {
+  "id": "7ca62ca1567a4e2a",
+  "ts": 1784736446,
+  "source": "web",
+  "kind": "listing",
+  "title": "בניית קונצנזוס ליישום פרויקט האזור העירוני החדש ומגרש הגולף של ליין הונג. - Vietnam.vn",
+  "link": "https://www.vietnam.vn/he/tao-dong-thuan-thuc-hien-du-an-khu-do-thi-moi-va-san-golf-lien-hong",
+  "price": null,
+  "size_dunam": 1.01,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
   "id": "02828ba31def6a41",
   "ts": 1784678707,
   "source": "web",
