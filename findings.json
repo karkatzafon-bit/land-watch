@@ -1,5 +1,19 @@
 [
  {
+  "id": "02828ba31def6a41",
+  "ts": 1784678707,
+  "source": "web",
+  "kind": "listing",
+  "title": "גליל ים: \"דלק נכסים\" תקים כ-17 אלף מ\"ר מסחר ותעסוקה - שרון אונליין",
+  "link": "https://sharonline.co.il/herzliya-city/%D7%93%D7%9C%D7%A7-%D7%A0%D7%9B%D7%A1%D7%99%D7%9D-%D7%92%D7%9C%D7%99%D7%9C-%D7%99%D7%9D-%D7%9E%D7%A1%D7%97%D7%A8-%D7%AA%D7%A2%D7%A1%D7%95%D7%A7%D7%94/",
+  "price": 17000.0,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": true,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "e3187f5bdae9db35",
   "ts": 1784666922,
   "source": "yad2",
