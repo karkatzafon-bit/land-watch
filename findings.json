@@ -1,5 +1,33 @@
 [
  {
+  "id": "216c202e3f6db281",
+  "ts": 1784839165,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏שיפוצניק‏",
+  "link": "https://www.facebook.com/nd/?groups%2F4818718378162177%2F&aref=1784837421221580&medium=email&mid=6574c8ee343faG5af41325b406G6574cd87946ccG91&bcode=2.1784837422.Ab3Elp58V4YOIAKIWJdNoHHcpRI&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKGk6FzqleYQi9xOLPWFBAd3D7edxpAQPV3T1GmtqrsEw",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
+  "id": "d05fcea2516bc47b",
+  "ts": 1784839165,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏הובלות קטנות (הובלות קטנות במחיר הוגן)‏",
+  "link": "https://www.facebook.com/nd/?groups%2F2059641637499270%2F&aref=1784838709934185&medium=email&mid=6574cdbb37597G5af41325b406G6574d25497869G91&bcode=2.1784838711.Ab20TADxJwTZAfFrWrRkVHDbblk&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAI3GeXMms24mXCDA2Il80JMbY-aLL33UHaiBwocqt6CxQ",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "7ca62ca1567a4e2a",
   "ts": 1784736446,
   "source": "web",
