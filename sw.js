@@ -1,6 +1,6 @@
 /* מפקדת קרקעות — Service Worker · גרסה 3.0 */
-const CACHE = 'karka-v300';
-const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'karka-v3013';
+const SHELL = ['./', './index.html', './manifest.json', './icon192.png', './icon512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
