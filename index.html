@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="מפקדת קרקעות">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -462,7 +462,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.11 · "משמר הירדן"';
+const APP_VERSION='3.0.12 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -885,7 +885,8 @@ let QA_LL=null,QA_DEAL='buy',QA_KIND='plot';
 function qaDeal(d){ QA_DEAL=d;
   document.getElementById('qaDealBuy').classList.toggle('on',d==='buy');
   document.getElementById('qaDealRent').classList.toggle('on',d==='rent');
-  const p=document.getElementById('qaPrice'); if(p)p.placeholder=d==='rent'?'3500 לחודש':'380000'; }
+  const p=document.getElementById('qaPrice'); if(p)p.placeholder=d==='rent'?'3500 לחודש':'380000';
+  if(d==='rent'){ const m=document.getElementById('qaMore'); if(m)m.classList.remove('hide'); } }
 function qaKind(k){ QA_KIND=k;
   ['plot','house','apt'].forEach(x=>{ const b=document.getElementById('qaKind_'+x); if(b)b.classList.toggle('on',x===k); }); }
 function openQuickAdd(latlng){
@@ -1128,7 +1129,8 @@ function renderTour(){
 }
 function tourSt(s){ const i=TOUR.sts.indexOf(s); if(i>=0)TOUR.sts.splice(i,1); else TOUR.sts.push(s); renderTour(); }
 function buildRoute(){
-  let cands=DATA.leads.filter(l=>leadCoords(l)&&TOUR.sts.includes(l.status)&&agriOK(l));
+  let cands=DATA.leads.filter(l=>{ const c=leadCoords(l);
+    return c&&!isNaN(+c[0])&&!isNaN(+c[1])&&TOUR.sts.includes(l.status)&&agriOK(l); });
   if(TOUR.zone!=='all')cands=cands.filter(l=>{ const z=zoneOf(l); return z&&z.id===TOUR.zone; });
   if(!cands.length){ TOUR.route=[]; TOUR.idx=0; renderTour(); return; }
   // שכן-קרוב מהמיקום הנוכחי (או ממרכז המפה)
