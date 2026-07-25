@@ -462,7 +462,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.9 · "משמר הירדן"';
+const APP_VERSION='3.0.11 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -495,6 +495,11 @@ function fmtDue(d){ if(!d)return ''; const s=String(d);
   const t=new Date(Number(d)||s); return isNaN(t)?s:t.toLocaleDateString('he-IL'); }
 function dueDate(d){ if(!d)return null; const s=String(d);
   const t=s.includes('-')?new Date(s+'T23:59'):new Date(Number(d)||s); return isNaN(t)?null:t; }
+function createdAt(l){ // תאריך הוספה: חותמת יצירה, או הרישום הראשון ביומן, או העדכון האחרון
+  if(l.createdAt)return l.createdAt;
+  if(l.log&&l.log.length)return l.log[l.log.length-1].at||l.at||0;
+  return l.at||0; }
+function fmtDate(t){ return t?new Date(t).toLocaleDateString('he-IL',{day:'numeric',month:'numeric',year:'2-digit'}):''; }
 const isDesktop=()=>window.matchMedia('(min-width:901px)').matches;
 
 /* ─── יישובים (מהגרסה הקודמת — נשמר) ─── */
@@ -597,8 +602,10 @@ function subscribeAll(){
   UNSUB.push(DB.collection('allowed').onSnapshot(s=>{ DATA.allowed=s.docs.map(d=>({...d.data(),id:d.id})); refreshScreens(); },e=>clog('error','allowed '+e.code)));
 }
 
-/* ─── Tier + חקלאי + השכרה ─── */
+/* ─── Tier + חקלאי + השכרה + סוג נכס ─── */
 function isRent(l){ return l.deal==='rent'; }
+const KINDS={plot:'🏞️ מגרש',house:'🏠 בית',apt:'🏢 דירה'};
+function kindBadge(l){ return l.kind&&KINDS[l.kind]?`<span class="bdgx">${KINDS[l.kind]}</span>`:''; }
 function tierOf(l){ if(isRent(l))return 0;   // מדרוג תקציב רלוונטי רק לקנייה
   const p=Number(l.price||0); if(!p)return 0; if(p<450000)return 1; if(p<1000000)return 2; if(p<=2500000)return 3; return 4; }
 function isAgri(l){ if(l.agri===true)return true; if(l.agri===false)return false;
@@ -852,10 +859,10 @@ function openLeadPopup(id){
   const d=MYPOS?distKm(MYPOS,c):null, agri=isAgri(l);
   const html=`
     <b>${esc(l.title||'ליד')}</b>
-    <div class="pm">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪':'מחיר ?'}
-      ${d!=null?' · '+d.toFixed(1)+' ק״מ ממך':''}</div>
+    <div class="pm">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪'+(isRent(l)?'/חודש':''):'מחיר ?'}${l.rooms?' · '+l.rooms+' חד׳':''}
+      ${d!=null?' · '+d.toFixed(1)+' ק״מ ממך':''} · 📅 ${fmtDate(createdAt(l))}</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
-      ${tierBadge(l)}<span class="bdgx" style="background:${ST_COLOR[l.status]||'#eee'};color:#fff">${stLbl(l.status)}</span>
+      ${tierBadge(l)}${kindBadge(l)}<span class="bdgx" style="background:${ST_COLOR[l.status]||'#eee'};color:#fff">${stLbl(l.status)}</span>
       ${agri?(l.agriAck?'<span class="bdgx warn">⚠️ חקלאי · אושר</span>':'<span class="bdgx warn">⚠️ חקלאי — טעון אישור</span>'):''}
     </div>
     <div class="pbtns">
@@ -874,21 +881,28 @@ function openSheet(html,center){ const ov=document.getElementById('overlay');
 function closeSheet(){ document.getElementById('overlay').classList.remove('show'); }
 
 /* הוספה מהירה */
-let QA_LL=null,QA_DEAL='buy';
+let QA_LL=null,QA_DEAL='buy',QA_KIND='plot';
 function qaDeal(d){ QA_DEAL=d;
   document.getElementById('qaDealBuy').classList.toggle('on',d==='buy');
   document.getElementById('qaDealRent').classList.toggle('on',d==='rent');
   const p=document.getElementById('qaPrice'); if(p)p.placeholder=d==='rent'?'3500 לחודש':'380000'; }
+function qaKind(k){ QA_KIND=k;
+  ['plot','house','apt'].forEach(x=>{ const b=document.getElementById('qaKind_'+x); if(b)b.classList.toggle('on',x===k); }); }
 function openQuickAdd(latlng){
-  QA_LL=latlng||null; QA_DEAL='buy';
+  QA_LL=latlng||null; QA_DEAL='buy'; QA_KIND='plot';
   const near=latlng?nearestTown(latlng):null;
   openSheet(`
     <div class="grab"></div>
     <h3>➕ ליד חדש — מהיר</h3>
     ${latlng?`<div class="pinhint">📌 מיקום נתפס מהמפה${near?' · ליד '+esc(near):''}</div>`:''}
-    <div style="display:flex;gap:7px;margin-bottom:12px">
+    <div style="display:flex;gap:7px;margin-bottom:9px">
       <button class="chip on" id="qaDealBuy" onclick="qaDeal('buy')">🏷️ קנייה</button>
       <button class="chip" id="qaDealRent" onclick="qaDeal('rent')">🔑 השכרה</button>
+    </div>
+    <div style="display:flex;gap:7px;margin-bottom:12px">
+      <button class="chip on" id="qaKind_plot" onclick="qaKind('plot')">🏞️ מגרש</button>
+      <button class="chip" id="qaKind_house" onclick="qaKind('house')">🏠 בית</button>
+      <button class="chip" id="qaKind_apt" onclick="qaKind('apt')">🏢 דירה</button>
     </div>
     <div class="fld"><label>מה זה?</label><input id="qaTitle" placeholder="מגרש חצי דונם, פינתי"></div>
     <div class="frow">
@@ -899,8 +913,9 @@ function openQuickAdd(latlng){
     <div id="qaMore" class="hide">
       <div class="frow">
         <div class="fld"><label>דונם</label><input id="qaDunam" type="number" step="0.1"></div>
-        <div class="fld"><label>📞 טלפון</label><input id="qaPhone" type="tel"></div>
+        <div class="fld"><label>🚪 חדרים</label><input id="qaRooms" type="number" step="0.5" placeholder="4"></div>
       </div>
+      <div class="fld"><label>📞 טלפון</label><input id="qaPhone" type="tel"></div>
       <div class="fld"><label>קישור</label><input id="qaLink" placeholder="https://…"></div>
       <div class="fld"><label>הערות</label><input id="qaNote" placeholder="גמיש במחיר / לבדוק תב״ע…"></div>
       <div class="fld"><label>⏰ תזכורת / דדליין</label><input id="qaDue" type="date"></div>
@@ -914,8 +929,10 @@ function saveQuick(){
   const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():'';
   const title=v('qaTitle'); if(!title){ toast('כתוב מה זה 🙂'); return; }
   const lead={ title, town:v('qaTown'), price:Number(v('qaPrice'))||null, dunam:Number(v('qaDunam'))||null,
+    rooms:Number(v('qaRooms'))||null,
     phone:v('qaPhone')||null, link:v('qaLink')||null, note:v('qaNote')||null, due:v('qaDue')||null,
-    deal:QA_DEAL, status:'new', by:WHO(), at:Date.now(), log:[{st:'new',note:'נוצר',by:WHO(),at:Date.now()}] };
+    deal:QA_DEAL, kind:QA_KIND, status:'new', by:WHO(), at:Date.now(), createdAt:Date.now(),
+    log:[{st:'new',note:'נוצר',by:WHO(),at:Date.now()}] };
   if(QA_LL){ lead.lat=QA_LL.lat; lead.lng=QA_LL.lng; }
   lead.agri=/חקלאי/.test(title+' '+(lead.note||''));
   DB.collection('leads').add(lead).then(()=>{ toast('ליד נשמר ✓'); closeSheet(); })
@@ -934,6 +951,7 @@ function openEdit(id){
     </div>
     <div class="frow">
       <div class="fld"><label>דונם</label><input id="edDunam" type="number" step="0.1" value="${l.dunam||''}"></div>
+      <div class="fld"><label>🚪 חדרים</label><input id="edRooms" type="number" step="0.5" value="${l.rooms||''}"></div>
       <div class="fld"><label>📞 טלפון</label><input id="edPhone" value="${esc(l.phone||'')}"></div>
     </div>
     <div class="fld"><label>קישור</label><input id="edLink" value="${esc(l.link||'')}"></div>
@@ -942,9 +960,15 @@ function openEdit(id){
       <div class="fld"><label>⏰ דדליין</label><input id="edDue" type="date" value="${esc(l.due||'')}"></div>
       <div class="fld"><label>קרקע חקלאית?</label><select id="edAgri"><option value="no" ${!isAgri(l)?'selected':''}>לא</option><option value="yes" ${isAgri(l)?'selected':''}>כן ⚠️</option></select></div>
     </div>
-    <div class="fld"><label>סוג עסקה</label><select id="edDeal">
-      <option value="buy" ${!isRent(l)?'selected':''}>🏷️ קנייה</option>
-      <option value="rent" ${isRent(l)?'selected':''}>🔑 השכרה (מחיר = ₪ לחודש)</option></select></div>
+    <div class="frow">
+      <div class="fld"><label>סוג עסקה</label><select id="edDeal">
+        <option value="buy" ${!isRent(l)?'selected':''}>🏷️ קנייה</option>
+        <option value="rent" ${isRent(l)?'selected':''}>🔑 השכרה (₪/חודש)</option></select></div>
+      <div class="fld"><label>סוג נכס</label><select id="edKind">
+        <option value="plot" ${(!l.kind||l.kind==='plot')?'selected':''}>🏞️ מגרש</option>
+        <option value="house" ${l.kind==='house'?'selected':''}>🏠 בית</option>
+        <option value="apt" ${l.kind==='apt'?'selected':''}>🏢 דירה</option></select></div>
+    </div>
     <div class="pinhint" style="cursor:pointer" onclick="pinFromMap('${l.id}')">📌 ${l.lat!=null?'מיקום מדויק נעוץ — לחץ לנעיצה מחדש':'אין מיקום מדויק — לחץ ואז לחץ על המפה'}</div>
     <div style="display:flex;gap:8px">
       <button class="btn p" style="flex:1;padding:13px" onclick="saveEdit('${l.id}')">שמור ✓</button>
@@ -954,9 +978,11 @@ function openEdit(id){
 function saveEdit(id){
   const v=x=>document.getElementById(x).value.trim();
   const upd={ title:v('edTitle'), town:v('edTown'), price:Number(v('edPrice'))||null, dunam:Number(v('edDunam'))||null,
+    rooms:Number(v('edRooms'))||null,
     phone:v('edPhone')||null, link:v('edLink')||null, note:v('edNote')||null, due:v('edDue')||null,
     agri:document.getElementById('edAgri').value==='yes',
-    deal:document.getElementById('edDeal').value, by:WHO(), at:Date.now() };
+    deal:document.getElementById('edDeal').value,
+    kind:document.getElementById('edKind').value, by:WHO(), at:Date.now() };
   DB.collection('leads').doc(id).update(upd).then(()=>{ toast('עודכן ✓'); closeSheet(); })
     .catch(e=>toast('שגיאה: '+e.code));
 }
@@ -1054,8 +1080,8 @@ function leadRowHtml(l){
   return `<div class="leadrow">
     <div class="lr-main" onclick="openStatus('${l.id}')" style="cursor:pointer">
       <b>${esc(l.title||'ליד')}</b>
-      <div class="lr-meta">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪'+(isRent(l)?'/חודש':''):'?'}${l.dunam?' · '+l.dunam+' דונם':''}${d!=null?' · '+d.toFixed(1)+' ק״מ':''}</div>
-      <div class="lr-badges">${tierBadge(l)}
+      <div class="lr-meta">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪'+(isRent(l)?'/חודש':''):'?'}${l.dunam?' · '+l.dunam+' דונם':''}${l.rooms?' · '+l.rooms+' חד׳':''}${d!=null?' · '+d.toFixed(1)+' ק״מ':''} · 📅 נוסף ${fmtDate(createdAt(l))}</div>
+      <div class="lr-badges">${tierBadge(l)}${kindBadge(l)}
         <span class="bdgx" style="background:${ST_COLOR[l.status]};color:#fff">${stLbl(l.status)}</span>
         ${agri?(l.agriAck?'<span class="bdgx warn">⚠️ אושר</span>':'<span class="bdgx warn">⚠️ חקלאי</span>'):''}
         ${l.due?`<span class="bdgx ${(dueDate(l.due)||new Date(9e15))<new Date()?'warn':''}">⏰ ${fmtDue(l.due)}</span>`:''}
