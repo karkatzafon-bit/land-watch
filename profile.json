@@ -1,19 +1,4 @@
 {
-  "feeds": [
-    "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
-    "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
-    "https://www.google.com/alerts/feeds/14392135715118895985/3196392219277136674",
-    "https://www.google.com/alerts/feeds/14392135715118895985/7737247213064390223",
-    "https://www.google.com/alerts/feeds/14392135715118895985/1472786581246698656",
-    "https://www.google.com/alerts/feeds/14392135715118895985/3213448284328784609",
-    "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
-    "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
-    "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
-  ],
-  "_land_type_options": "all | build_only",
-  "size_max_dunam": 0,
-  "size_min_dunam": 0,
-  "keep_if_no_price": true,
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -26,6 +11,14 @@
     "מגרשי בנייה",
     "דונם"
   ],
+  "sources": {
+    "alerts": true,
+    "facebook": true,
+    "yad2": true
+  },
+  "urgent_below": 450000,
+  "land_type": "all",
+  "size_min_dunam": 0,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -44,14 +37,21 @@
     "כרמל",
     "חוף הכרמל"
   ],
+  "_land_type_options": "all | build_only",
+  "size_max_dunam": 0,
+  "keep_if_no_price": true,
   "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "max_price": 0,
-  "land_type": "all",
   "max_messages_per_run": 25,
-  "urgent_below": 450000,
-  "sources": {
-    "facebook": true,
-    "alerts": true,
-    "yad2": true
-  }
+  "max_price": 0,
+  "feeds": [
+    "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
+    "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3196392219277136674",
+    "https://www.google.com/alerts/feeds/14392135715118895985/7737247213064390223",
+    "https://www.google.com/alerts/feeds/14392135715118895985/1472786581246698656",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3213448284328784609",
+    "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
+    "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
+  ]
 }
