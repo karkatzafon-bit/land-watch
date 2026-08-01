@@ -1,5 +1,19 @@
 [
  {
+  "id": "df0528af57369188",
+  "ts": 1785601771,
+  "source": "web",
+  "kind": "listing",
+  "title": "קו חדש, מטוסים חדשים ואלפי  מושבים  נוספים: ענקית התעופה מסתערת על  צפון  אמריקה - PassportNews",
+  "link": "https://passportnews.co.il/article/208280",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
   "id": "e00a32cf4ae12fab",
   "ts": 1785586512,
   "source": "facebook",
