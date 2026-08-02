@@ -346,6 +346,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
       <button class="mtool" id="toolZFilter" onclick="toggleZoneFilter()" title="הצג רק לידים בגזרות">⬠</button>
       <button class="mtool" id="toolZMgr" onclick="openZonesManager()" title="ניהול גזרות">🗂️</button>
       <button class="mtool" id="toolCad" onclick="toggleCadastre()" title="גושים וחלקות">🧩</button>
+      <button class="mtool" id="toolPlan" onclick="togglePlans()" title="תוכניות בניין עיר (תב״ע)">📋</button>
       <button class="mtool deskonly" id="toolTender" onclick="openGovmapTenders()" title="מכרזי רמ״י">🏛️</button>
     </div>
     <button class="mtool" id="toolSat" onclick="toggleSat()" title="מפה/לוויין">🛰️</button>
@@ -464,7 +465,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.14 · "משמר הירדן"';
+const APP_VERSION='3.0.15 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -837,32 +838,52 @@ function toggleLocate(){
   },e=>{ toast('לא הצלחתי לאתר מיקום'); btn.classList.remove('on'); WATCHID=null; },{enableHighAccuracy:true});
 }
 
-/* 🧩 גושים וחלקות — שכבות ציבוריות של מרכז המיפוי לישראל (מפ"י) */
+/* 🧩 גושים וחלקות — השכבות של מפת "חיפוש גושים וחלקות" הרשמית */
 let CAD_ON=false,CAD_PARCELS=null,CAD_GUSH=null,CAD_ERR=false;
-const CAD_BASE='https://services5.arcgis.com/dlrDjz89gx9qyfev/arcgis/rest/services';
+const CAD_ORG='https://services8.arcgis.com/JcXY3lLZni6BK4El/arcgis/rest/services/';
+function cadVal(p,keys){ for(const k of keys){ if(p[k]!=null&&p[k]!=='')return p[k]; } return '?'; }
 function toggleCadastre(){
   if(!window.L||!L.esri){ toast('שכבת החלקות לא נטענה — בדוק חיבור ורענן'); return; }
   CAD_ON=!CAD_ON;
   document.getElementById('toolCad').classList.toggle('on',CAD_ON);
   if(!CAD_ON){ if(CAD_PARCELS)MAP.removeLayer(CAD_PARCELS); if(CAD_GUSH)MAP.removeLayer(CAD_GUSH); return; }
   if(!CAD_PARCELS){
-    CAD_GUSH=L.esri.featureLayer({url:CAD_BASE+'/SUB_GUSH_ALL_EDIT/FeatureServer/0',
+    CAD_GUSH=L.esri.featureLayer({url:CAD_ORG+encodeURIComponent('שכבת_גושים')+'/FeatureServer/0',
       minZoom:13,simplifyFactor:.5,precision:5,
       style:()=>({color:'#7E5FA4',weight:1.6,fillOpacity:0,dashArray:'4 4'})});
     CAD_GUSH.bindPopup(l=>{ const p=l.feature.properties||{};
-      return '<b>🧩 גוש '+(p.GUSH_NUM||p.SUB_GUSH_ID||'?')+'</b>'; },{maxWidth:200});
-    CAD_PARCELS=L.esri.featureLayer({url:CAD_BASE+'/PARCEL_ALL_EDIT/FeatureServer/0',
+      return '<b>🧩 גוש '+cadVal(p,['GUSH_NUM','GUSH','gush_num','MSGUSH'])+'</b>'; },{maxWidth:200});
+    CAD_PARCELS=L.esri.featureLayer({url:CAD_ORG+encodeURIComponent('חלקות')+'/FeatureServer/0',
       minZoom:15,simplifyFactor:.4,precision:6,
       style:()=>({color:'#C0492E',weight:1.1,fillOpacity:.03})});
     CAD_PARCELS.bindPopup(l=>{ const p=l.feature.properties||{};
-      return '<b>🧩 גוש '+(p.GUSH_NUM||'?')+' · חלקה '+(p.PARCEL||'?')+'</b>'
-        +(p.LEGAL_AREA?'<div class="pm">שטח רשום: '+fmt(p.LEGAL_AREA)+' מ״ר</div>':''); },{maxWidth:220});
+      const ar=cadVal(p,['LEGAL_AREA','Shape__Area','SHAPE_Area']);
+      return '<b>🧩 גוש '+cadVal(p,['GUSH_NUM','GUSH','gush_num'])+' · חלקה '+cadVal(p,['PARCEL','PARCEL_NUM','parcel'])+'</b>'
+        +(ar!=='?'?'<div class="pm">שטח: '+fmt(Math.round(ar))+' מ״ר</div>':''); },{maxWidth:220});
     [CAD_GUSH,CAD_PARCELS].forEach(ly=>ly.on('requesterror',e=>{
       if(CAD_ERR)return; CAD_ERR=true; clog('error','cadastre '+(e&&e.message||''));
-      toast('⚠️ שכבת מפ"י לא מגיבה — נסה דרך govmap 🏛️'); }));
+      toast('⚠️ שכבת החלקות לא מגיבה — נסה דרך govmap 🏛️'); }));
   }
   CAD_GUSH.addTo(MAP); CAD_PARCELS.addTo(MAP);
   toast(MAP.getZoom()<13?'🧩 שכבת גושים/חלקות פעילה — התקרב כדי לראות':'🧩 גושים (סגול) · חלקות (אדום) — לחץ על חלקה למספרים');
+}
+/* 📋 תב"ע — תוכניות בניין עיר (מינהל התכנון) */
+let PLAN_ON=false,PLAN_LAYER=null,PLAN_ERR=false;
+function togglePlans(){
+  if(!window.L||!L.esri){ toast('השכבה לא נטענה — רענן'); return; }
+  PLAN_ON=!PLAN_ON;
+  document.getElementById('toolPlan').classList.toggle('on',PLAN_ON);
+  if(!PLAN_ON){ if(PLAN_LAYER)MAP.removeLayer(PLAN_LAYER); return; }
+  if(!PLAN_LAYER){
+    PLAN_LAYER=L.esri.dynamicMapLayer({
+      url:'https://ags.iplan.gov.il/arcgisiplan/rest/services/PlanningPublic/Xplan/MapServer',
+      opacity:.55});
+    PLAN_LAYER.on('requesterror',e=>{ if(PLAN_ERR)return; PLAN_ERR=true;
+      clog('error','plans '+(e&&e.message||''));
+      toast('⚠️ שכבת התב"ע לא מגיבה כרגע'); });
+  }
+  PLAN_LAYER.addTo(MAP);
+  toast('📋 שכבת תב"ע (תוכניות בניין עיר) פעילה — התקרב לאזור');
 }
 /* מכרזי רמ״י (מחשב) */
 function wgs84ToITM(lat,lng){
