@@ -345,6 +345,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
       <button class="mtool" id="toolZone" onclick="startTool('zone')" title="ציור גזרה">✏️</button>
       <button class="mtool" id="toolZFilter" onclick="toggleZoneFilter()" title="הצג רק לידים בגזרות">⬠</button>
       <button class="mtool" id="toolZMgr" onclick="openZonesManager()" title="ניהול גזרות">🗂️</button>
+      <button class="mtool" id="toolCad" onclick="toggleCadastre()" title="גושים וחלקות">🧩</button>
       <button class="mtool deskonly" id="toolTender" onclick="openGovmapTenders()" title="מכרזי רמ״י">🏛️</button>
     </div>
     <button class="mtool" id="toolSat" onclick="toggleSat()" title="מפה/לוויין">🛰️</button>
@@ -456,13 +457,14 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 
 <!-- ═══ ספריות ═══ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.13 · "משמר הירדן"';
+const APP_VERSION='3.0.14 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -835,6 +837,33 @@ function toggleLocate(){
   },e=>{ toast('לא הצלחתי לאתר מיקום'); btn.classList.remove('on'); WATCHID=null; },{enableHighAccuracy:true});
 }
 
+/* 🧩 גושים וחלקות — שכבות ציבוריות של מרכז המיפוי לישראל (מפ"י) */
+let CAD_ON=false,CAD_PARCELS=null,CAD_GUSH=null,CAD_ERR=false;
+const CAD_BASE='https://services5.arcgis.com/dlrDjz89gx9qyfev/arcgis/rest/services';
+function toggleCadastre(){
+  if(!window.L||!L.esri){ toast('שכבת החלקות לא נטענה — בדוק חיבור ורענן'); return; }
+  CAD_ON=!CAD_ON;
+  document.getElementById('toolCad').classList.toggle('on',CAD_ON);
+  if(!CAD_ON){ if(CAD_PARCELS)MAP.removeLayer(CAD_PARCELS); if(CAD_GUSH)MAP.removeLayer(CAD_GUSH); return; }
+  if(!CAD_PARCELS){
+    CAD_GUSH=L.esri.featureLayer({url:CAD_BASE+'/SUB_GUSH_ALL_EDIT/FeatureServer/0',
+      minZoom:13,simplifyFactor:.5,precision:5,
+      style:()=>({color:'#7E5FA4',weight:1.6,fillOpacity:0,dashArray:'4 4'})});
+    CAD_GUSH.bindPopup(l=>{ const p=l.feature.properties||{};
+      return '<b>🧩 גוש '+(p.GUSH_NUM||p.SUB_GUSH_ID||'?')+'</b>'; },{maxWidth:200});
+    CAD_PARCELS=L.esri.featureLayer({url:CAD_BASE+'/PARCEL_ALL_EDIT/FeatureServer/0',
+      minZoom:15,simplifyFactor:.4,precision:6,
+      style:()=>({color:'#C0492E',weight:1.1,fillOpacity:.03})});
+    CAD_PARCELS.bindPopup(l=>{ const p=l.feature.properties||{};
+      return '<b>🧩 גוש '+(p.GUSH_NUM||'?')+' · חלקה '+(p.PARCEL||'?')+'</b>'
+        +(p.LEGAL_AREA?'<div class="pm">שטח רשום: '+fmt(p.LEGAL_AREA)+' מ״ר</div>':''); },{maxWidth:220});
+    [CAD_GUSH,CAD_PARCELS].forEach(ly=>ly.on('requesterror',e=>{
+      if(CAD_ERR)return; CAD_ERR=true; clog('error','cadastre '+(e&&e.message||''));
+      toast('⚠️ שכבת מפ"י לא מגיבה — נסה דרך govmap 🏛️'); }));
+  }
+  CAD_GUSH.addTo(MAP); CAD_PARCELS.addTo(MAP);
+  toast(MAP.getZoom()<13?'🧩 שכבת גושים/חלקות פעילה — התקרב כדי לראות':'🧩 גושים (סגול) · חלקות (אדום) — לחץ על חלקה למספרים');
+}
 /* מכרזי רמ״י (מחשב) */
 function wgs84ToITM(lat,lng){
   const a=6378137.0,f=1/298.257222101,k0=1.0000067;
@@ -862,7 +891,7 @@ function openLeadPopup(id){
     <div class="pm">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪'+(isRent(l)?'/חודש':''):'מחיר ?'}${l.rooms?' · '+l.rooms+' חד׳':''}
       ${d!=null?' · '+d.toFixed(1)+' ק״מ ממך':''} · 📅 ${fmtDate(createdAt(l))}</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
-      ${tierBadge(l)}${kindBadge(l)}<span class="bdgx" style="background:${ST_COLOR[l.status]||'#eee'};color:#fff">${stLbl(l.status)}</span>
+      ${tierBadge(l)}${kindBadge(l)}${l.gush?`<span class="bdgx">🧩 ${esc(l.gush)}${l.helka?'/'+esc(l.helka):''}</span>`:''}<span class="bdgx" style="background:${ST_COLOR[l.status]||'#eee'};color:#fff">${stLbl(l.status)}</span>
       ${agri?(l.agriAck?'<span class="bdgx warn">⚠️ חקלאי · אושר</span>':'<span class="bdgx warn">⚠️ חקלאי — טעון אישור</span>'):''}
     </div>
     <div class="pbtns">
@@ -916,6 +945,10 @@ function openQuickAdd(latlng){
         <div class="fld"><label>דונם</label><input id="qaDunam" type="number" step="0.1"></div>
         <div class="fld"><label>🚪 חדרים</label><input id="qaRooms" type="number" step="0.5" placeholder="4"></div>
       </div>
+      <div class="frow">
+        <div class="fld"><label>🧩 גוש</label><input id="qaGush" inputmode="numeric" placeholder="13567"></div>
+        <div class="fld"><label>חלקה</label><input id="qaHelka" inputmode="numeric" placeholder="42"></div>
+      </div>
       <div class="fld"><label>📞 טלפון</label><input id="qaPhone" type="tel"></div>
       <div class="fld"><label>קישור</label><input id="qaLink" placeholder="https://…"></div>
       <div class="fld"><label>הערות</label><input id="qaNote" placeholder="גמיש במחיר / לבדוק תב״ע…"></div>
@@ -930,7 +963,7 @@ function saveQuick(){
   const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():'';
   const title=v('qaTitle'); if(!title){ toast('כתוב מה זה 🙂'); return; }
   const lead={ title, town:v('qaTown'), price:Number(v('qaPrice'))||null, dunam:Number(v('qaDunam'))||null,
-    rooms:Number(v('qaRooms'))||null,
+    rooms:Number(v('qaRooms'))||null, gush:v('qaGush')||null, helka:v('qaHelka')||null,
     phone:v('qaPhone')||null, link:v('qaLink')||null, note:v('qaNote')||null, due:v('qaDue')||null,
     deal:QA_DEAL, kind:QA_KIND, status:'new', by:WHO(), at:Date.now(), createdAt:Date.now(),
     log:[{st:'new',note:'נוצר',by:WHO(),at:Date.now()}] };
@@ -954,6 +987,10 @@ function openEdit(id){
       <div class="fld"><label>דונם</label><input id="edDunam" type="number" step="0.1" value="${l.dunam||''}"></div>
       <div class="fld"><label>🚪 חדרים</label><input id="edRooms" type="number" step="0.5" value="${l.rooms||''}"></div>
       <div class="fld"><label>📞 טלפון</label><input id="edPhone" value="${esc(l.phone||'')}"></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>🧩 גוש</label><input id="edGush" inputmode="numeric" value="${esc(l.gush||'')}"></div>
+      <div class="fld"><label>חלקה</label><input id="edHelka" inputmode="numeric" value="${esc(l.helka||'')}"></div>
     </div>
     <div class="fld"><label>קישור</label><input id="edLink" value="${esc(l.link||'')}"></div>
     <div class="fld"><label>הערות</label><textarea id="edNote" rows="2">${esc(l.note||'')}</textarea></div>
@@ -979,7 +1016,7 @@ function openEdit(id){
 function saveEdit(id){
   const v=x=>document.getElementById(x).value.trim();
   const upd={ title:v('edTitle'), town:v('edTown'), price:Number(v('edPrice'))||null, dunam:Number(v('edDunam'))||null,
-    rooms:Number(v('edRooms'))||null,
+    rooms:Number(v('edRooms'))||null, gush:v('edGush')||null, helka:v('edHelka')||null,
     phone:v('edPhone')||null, link:v('edLink')||null, note:v('edNote')||null, due:v('edDue')||null,
     agri:document.getElementById('edAgri').value==='yes',
     deal:document.getElementById('edDeal').value,
@@ -1003,12 +1040,23 @@ function openStatus(id){
     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
       ${STATUSES.map(s=>`<button class="chip ${l.status===s[0]?'on':''}" onclick="setStatus('${id}','${s[0]}')">${s[1]}</button>`).join('')}
     </div>
+    <div class="fld" style="margin-top:4px"><label>➕ הערה ליומן (בלי לשנות סטטוס)</label>
+      <textarea id="logNote" rows="2" placeholder="דיברתי עם המתווך / ראיתי מהכביש / …"></textarea></div>
+    <button class="btn p sm" style="margin-bottom:14px" onclick="addLogNote('${id}')">שמור הערה ליומן ✓</button>
     <h3 style="font-size:14px">📖 יומן — מה קרה</h3>
     <div style="max-height:36vh;overflow-y:auto">
     ${(l.log||[]).map(e=>`<div class="card" style="padding:9px 12px;margin-bottom:7px">
       <b style="font-size:12.5px">${stLbl(e.st)}</b> <span class="mutetxt">· ${e.by||''} · ${new Date(e.at).toLocaleDateString('he-IL')}</span>
       ${e.note?`<div style="font-size:12.5px;margin-top:2px">${esc(e.note)}</div>`:''}</div>`).join('')||'<div class="mutetxt">אין רישומים עדיין</div>'}
     </div>`);
+}
+function addLogNote(id){
+  const l=DATA.leads.find(x=>x.id===id); if(!l)return;
+  const note=document.getElementById('logNote').value.trim();
+  if(!note){ toast('כתוב הערה קודם 🙂'); return; }
+  const log=l.log||[]; log.unshift({st:l.status,note,by:WHO(),at:Date.now()});
+  DB.collection('leads').doc(id).update({log,by:WHO(),at:Date.now()})
+    .then(()=>{ toast('הערה נשמרה ביומן ✓'); openStatus(id); });
 }
 function setStatus(id,st){
   const l=DATA.leads.find(x=>x.id===id); if(!l||l.status===st)return;
@@ -1082,7 +1130,7 @@ function leadRowHtml(l){
     <div class="lr-main" onclick="openStatus('${l.id}')" style="cursor:pointer">
       <b>${esc(l.title||'ליד')}</b>
       <div class="lr-meta">📍 ${esc(l.town||'—')} · ${l.price?fmt(l.price)+' ₪'+(isRent(l)?'/חודש':''):'?'}${l.dunam?' · '+l.dunam+' דונם':''}${l.rooms?' · '+l.rooms+' חד׳':''}${d!=null?' · '+d.toFixed(1)+' ק״מ':''} · 📅 נוסף ${fmtDate(createdAt(l))}</div>
-      <div class="lr-badges">${tierBadge(l)}${kindBadge(l)}
+      <div class="lr-badges">${tierBadge(l)}${kindBadge(l)}${l.gush?`<span class="bdgx">🧩 ${esc(l.gush)}${l.helka?'/'+esc(l.helka):''}</span>`:''}
         <span class="bdgx" style="background:${ST_COLOR[l.status]};color:#fff">${stLbl(l.status)}</span>
         ${agri?(l.agriAck?'<span class="bdgx warn">⚠️ אושר</span>':'<span class="bdgx warn">⚠️ חקלאי</span>'):''}
         ${l.due?`<span class="bdgx ${(dueDate(l.due)||new Date(9e15))<new Date()?'warn':''}">⏰ ${fmtDue(l.due)}</span>`:''}
@@ -1251,9 +1299,9 @@ function renderReports(){
 function repSort(k){ if(REP.sort===k)REP.dir*=-1; else{REP.sort=k;REP.dir=-1;} renderReports(); }
 function exportCSV(){
   const list=repLeads();
-  const head=['כותרת','יישוב','מחיר','דונם','₪ לדונם','סטטוס','גזרה','Tier','חקלאי','טלפון','קישור','הערות'];
+  const head=['כותרת','יישוב','גוש','חלקה','מחיר','דונם','₪ לדונם','סטטוס','גזרה','Tier','חקלאי','טלפון','קישור','הערות'];
   const rows=list.map(l=>{ const z=zoneOf(l);
-    return [l.title,l.town,l.price,l.dunam,(l.price&&l.dunam)?Math.round(l.price/l.dunam):'',stLbl(l.status),
+    return [l.title,l.town,l.gush,l.helka,l.price,l.dunam,(l.price&&l.dunam)?Math.round(l.price/l.dunam):'',stLbl(l.status),
       z?z.name:'',tierOf(l)||'',isAgri(l)?'כן':'לא',l.phone,l.link,(l.note||'').replace(/\n/g,' ')]
       .map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(','); });
   const blob=new Blob(['﻿'+head.join(',')+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
