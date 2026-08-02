@@ -1,5 +1,33 @@
 [
  {
+  "id": "036f0dde8440fd06",
+  "ts": 1785677256,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏קרקעות ומיגרשים‏",
+  "link": "https://www.facebook.com/nd/?groups%2F1438148343078659%2F&aref=1785672838179584&medium=email&mid=6580f119e682eG5af41325b406G6580f5b346b00G91&bcode=2.1785672839.Ab0Y4eaoXTqcSL6UcfbHW-dzVZU&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKGzz7Uo_i2EC-ij_qYoc3WslMCYKDtRVzfr3a1xJAeFA",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": true,
+  "reason": ""
+ },
+ {
+  "id": "976078c9b2336407",
+  "ts": 1785677256,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏קרקעות למכירה | קרקעות בארץ ישראל‏",
+  "link": "https://www.facebook.com/nd/?groups%2Flands.israel%2F&aref=1785673253291231&medium=email&mid=6580f2a5c820dG5af41325b406G6580f73f284dfG91&bcode=2.1785673255.Ab0T2rXRjVG2LnfoXM0fLvyFgbo&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAK2wS2HepqCSL05HA4LEdJ7h1HfZksEDzxffQVy3wWF1Q",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": true,
+  "reason": ""
+ },
+ {
   "id": "df0528af57369188",
   "ts": 1785601771,
   "source": "web",
