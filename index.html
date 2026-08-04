@@ -240,6 +240,10 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 .pricetag.t1{background:var(--t1)}.pricetag.t2{background:var(--t2)}.pricetag.t3{background:var(--t3)}
 .pricetag.agri{background:var(--clay)}
 .pricetag.rent{background:var(--teal)}
+/* 3.0.17: ליד בארכיון — נשאר על המפה, אפור ושקוף. לזכור שיש שם משהו, בלי שיתחרה על העין. */
+.pricetag.gone{background:#7d857a;opacity:.4;box-shadow:0 2px 6px rgba(0,0,0,.14);
+  font-weight:600;text-decoration:line-through}
+.pricetag.gone:hover{opacity:.95;text-decoration:none}
 .leaflet-div-icon{background:none;border:none}
 .zonelbl{background:#fff;border:none;border-radius:999px;padding:3px 11px;font-family:'Heebo',sans-serif;
   font-size:11px;font-weight:800;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.18);
@@ -258,6 +262,48 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 #dashpanel h4 button{color:var(--muted);font-size:14px}
 .dline{font-size:12px;padding:7px 9px;border-radius:10px;background:#F7F8F4;margin-bottom:6px;font-weight:600}
 .dline.warn{background:var(--clay-l);color:var(--clay)}
+.dhdr{font-size:11px;font-weight:800;color:var(--muted);margin:12px 0 5px}
+.gbar{height:4px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.gbar i{display:block;height:100%;background:var(--em);border-radius:3px;transition:width .4s}
+.gbar.y i{background:var(--t2)} .gbar.r i{background:var(--clay)}
+.spark{display:flex;align-items:flex-end;gap:4px;height:34px;padding:0 2px}
+.spark i{flex:1;background:var(--em);opacity:.7;border-radius:3px 3px 0 0;min-height:3px}
+.spark i.today{opacity:1;background:var(--gold-d)}
+.sparkd{display:flex;gap:4px;padding:0 2px;margin-top:3px}
+.sparkd span{flex:1;text-align:center;font-size:8.5px;color:var(--muted);font-weight:700}
+.pipe{font-size:11px;font-weight:700;padding:7px 9px;border-radius:9px;margin-top:10px;text-align:center}
+.pipe.ok{background:var(--em-l);color:var(--em-d)}
+.pipe.bad{background:var(--clay-l);color:var(--clay)}
+
+/* ─── 3.0.17 · יומן: כפתור עריכה לכל רישום ─── */
+.logrow{position:relative}
+.logrow .logedit{position:absolute;inset-inline-end:8px;top:7px;width:28px;height:28px;border-radius:9px;
+  background:#F0F2ED;font-size:13px;display:flex;align-items:center;justify-content:center;opacity:.75}
+.logrow .logedit:hover{opacity:1;background:var(--em-l)}
+.dropbnr{background:#F0F2ED;border-inline-start:4px solid var(--muted);border-radius:12px;
+  padding:11px 13px;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:13px}
+
+/* ─── 3.0.17 · טבלת שליטה למשימות ─── */
+.tkwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r);box-shadow:var(--shadow-s);background:#fff}
+table.tk{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff}
+.tk th{background:#14201A;color:#fff;padding:9px 10px;text-align:right;font-size:11.5px;font-weight:700;white-space:nowrap;cursor:pointer}
+.tk th.on{background:var(--em-d)}
+.tk td{padding:8px 10px;border-bottom:1px solid #F0F2ED;vertical-align:middle}
+.tk tr.late td{background:var(--clay-l)}
+.tk tr.today td{background:#FCF6E5}
+.tk tr.done td{opacity:.55}
+.tk tr.done .tkt{text-decoration:line-through}
+.tk .cbx{width:23px;height:23px;border-radius:8px;border:2px solid var(--line);background:#fff;
+  font-size:13px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center}
+.tk .cbx.on{background:var(--em);border-color:var(--em);color:#fff}
+.tk .tkt{font-weight:700;cursor:pointer;min-width:120px}
+.tk .lnk{color:var(--em-d);font-weight:700;cursor:pointer;white-space:nowrap}
+.tk .dcell{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tk .acts{white-space:nowrap;text-align:end}
+.tk .acts button{padding:5px 8px;border-radius:9px;background:#F0F2ED;font-size:12px;margin-inline-start:4px}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-inline-end:5px;vertical-align:middle}
+.pdot.pr1{background:var(--clay)} .pdot.pr2{background:var(--gold-d)} .pdot.pr3{background:#B4B9AE}
+@media (max-width:900px){ .tk .m-hide{display:none} .tk th,.tk td{padding:8px 7px} }
 
 /* ─── פריסת מחשב ─── */
 @media (min-width:901px){
@@ -377,6 +423,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
     <div class="sb-brand"><b>🎖️ מפקדת קרקעות</b><span>צפון · <span id="sbVer"></span></span></div>
     <button class="sbitem on" data-s="map" onclick="nav('map')">🗺️ מפה</button>
     <button class="sbitem" data-s="leads" onclick="nav('leads')">📋 לידים</button>
+    <button class="sbitem" data-s="tasks" onclick="nav('tasks')">🗒️ משימות <span class="n hide" id="taskBadge"></span></button>
     <button class="sbitem" data-s="reports" onclick="nav('reports')">📈 דוחות</button>
     <button class="sbitem" data-s="feed" onclick="nav('feed')">📡 פיד <span class="n hide" id="feedBadge2"></span></button>
     <button class="sbitem" data-s="tour" onclick="nav('tour')">🚗 סיור</button>
@@ -395,6 +442,17 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
     <div class="scrn-body">
       <div id="leadFilters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div id="leadList"></div>
+    </div>
+  </div>
+
+  <div class="scrn" id="scrn-tasks">
+    <div class="scrn-head"><button class="back" onclick="nav('map')">→</button><h2>🗒️ משימות</h2>
+      <button class="btn sm p" onclick="newTask()">➕ משימה</button>
+      <button class="btn sm" onclick="exportTasksCSV()">📥 אקסל</button></div>
+    <div class="scrn-body">
+      <div id="taskFilters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div class="kpirow" id="taskKpis"></div>
+      <div id="taskTable"></div>
     </div>
   </div>
 
@@ -465,7 +523,7 @@ table.pv{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;bo
 <script>
 /* ═══════════ מפקדת קרקעות — צפון · גרסה 3.0 "משמר הירדן" ═══════════ */
 'use strict';
-const APP_VERSION='3.0.15 · "משמר הירדן"';
+const APP_VERSION='3.0.18 · "משמר הירדן"';
 
 /* חיבור לפרויקט Firebase (מזהים ציבוריים — ההגנה היא בחוקי האבטחה) */
 const firebaseConfig = {
@@ -587,17 +645,22 @@ async function checkAllowed(){
 }
 
 /* ─── מצב נתונים ─── */
-const DATA={leads:[],feed:[],zones:[],profile:{},sprint:{},pipeline:{},allowed:[]};
+const DATA={leads:[],feed:[],zones:[],profile:{},sprint:{},pipeline:{},allowed:[],tasks:[]};
 const UNSUB=[];
 function subscribeAll(){
   UNSUB.forEach(u=>u()); UNSUB.length=0;
   /* חשוב: id של המסמך תמיד גובר על שדה id ישן שהגיע מהייבוא */
   UNSUB.push(DB.collection('leads').onSnapshot(s=>{ DATA.leads=s.docs.map(d=>({...d.data(),id:d.id}));
     renderMarkers(); refreshScreens(); updateBell(); renderDash(); },e=>clog('error','leads sub '+e.code)));
-  UNSUB.push(DB.collection('feed').limit(300).onSnapshot(s=>{
+  /* 3.0.16: limit בלי orderBy מחזיר לפי סדר מזהה — לא לפי תאריך.
+     עד שלכל המסמכים יהיה שדה at אחיד, המרווח הוגדל כדי שממצאים חדשים לא ייחתכו בשקט. */
+  UNSUB.push(DB.collection('feed').limit(1200).onSnapshot(s=>{
     DATA.feed=s.docs.map(d=>({...d.data(),id:d.id}))
       .sort((a,b)=>(b.at||b._syncedAt||b.ts||0)-(a.at||a._syncedAt||a.ts||0));
     refreshScreens(); updateFeedBadge(); renderDash(); },e=>clog('error','feed sub '+e.code)));
+  /* 3.0.17: משימות — טבלת השליטה */
+  UNSUB.push(DB.collection('tasks').onSnapshot(s=>{ DATA.tasks=s.docs.map(d=>({...d.data(),id:d.id}));
+    refreshScreens(); updateTaskBadge(); renderDash(); },e=>clog('error','tasks sub '+e.code)));
   UNSUB.push(DB.collection('zones').onSnapshot(s=>{ DATA.zones=s.docs.map(d=>({...d.data(),id:d.id})); renderZones(); refreshScreens(); },e=>clog('error','zones '+e.code)));
   UNSUB.push(DB.collection('profile').doc('main').onSnapshot(s=>{ DATA.profile=s.exists?s.data():{}; refreshScreens(); },e=>clog('error','profile '+e.code)));
   UNSUB.push(DB.collection('sprint').doc('main').onSnapshot(s=>{ DATA.sprint=s.exists?s.data():{}; refreshScreens(); renderDash(); },e=>clog('error','sprint '+e.code)));
@@ -621,8 +684,13 @@ function tierBadge(l){
 
 /* ─── סטטוסים ─── */
 const STATUSES=[['new','חדש'],['called','התקשרתי'],['visited','ביקרתי'],['lawyer','אצל עו״ד'],['offer','הצעה הוגשה']];
-const ST_COLOR={new:'#8f978c',called:'#C89A1F',visited:'#2E6E7E',lawyer:'#7E5FA4',offer:'#0E8A52'};
-function stLbl(s){ return (STATUSES.find(x=>x[0]===s)||STATUSES[0])[1]; }
+/* 3.0.17: "לא רלוונטי" הוא ארכיון, לא מחיקה — הליד נשאר עם כל היומן שלו,
+   אבל יורד מהמפה, מהרשימה, מתור הפעולות ומהדוחות. אפשר תמיד להחזיר אותו. */
+const DROPPED='dropped';
+const ST_ALL=[...STATUSES,[DROPPED,'🚫 לא רלוונטי']];
+const ST_COLOR={new:'#8f978c',called:'#C89A1F',visited:'#2E6E7E',lawyer:'#7E5FA4',offer:'#0E8A52',dropped:'#B4B9AE'};
+function stLbl(s){ return (ST_ALL.find(x=>x[0]===s)||ST_ALL[0])[1]; }
+function isDropped(l){ return !!l&&l.status===DROPPED; }
 
 /* ─── Waze ─── */
 function leadCoords(l){ return (l.lat!=null&&l.lng!=null)?[l.lat,l.lng]:townCoords(l.town); }
@@ -662,11 +730,13 @@ function renderMarkers(){
   DATA.leads.forEach(l=>{
     const c=leadCoords(l); if(!c)return;
     if(ZONE_FILTER&&!zoneOf(l))return;   // ⬠ פילטר גזרות
+    /* 🚫 ארכיון: נשאר על המפה — אפור, שקוף ומאחורי כולם — כדי לזכור שיש שם הצעה */
+    const gone=isDropped(l);
     const t=tierOf(l), agri=isAgri(l), rent=isRent(l);
-    const cls=agri&&!l.agriAck?'agri':rent?'rent':(t?'t'+Math.min(t,3):'');
+    const cls=gone?'gone':(agri&&!l.agriAck?'agri':rent?'rent':(t?'t'+Math.min(t,3):''));
     const txt=rent?(l.price?fmtK(l.price)+'/ח׳':'🔑'):(l.price?fmtK(l.price):'?');
-    const ic=L.divIcon({html:`<button class="pricetag ${cls}">${agri?'⚠️ ':''}${txt}</button>`,iconAnchor:[22,14]});
-    const m=L.marker(c,{icon:ic}).addTo(MAP).on('click',()=>{
+    const ic=L.divIcon({html:`<button class="pricetag ${cls}">${gone?'':agri?'⚠️ ':''}${txt}</button>`,iconAnchor:[22,14]});
+    const m=L.marker(c,{icon:ic,zIndexOffset:gone?-600:0}).addTo(MAP).on('click',()=>{
       if(TOOL){ mapClick({latlng:L.latLng(c[0],c[1])}); return; }   // בזמן ציור — הליד הוא נקודה
       openLeadPopup(l.id); });
     MARKERS.push(m);
@@ -920,6 +990,7 @@ function openLeadPopup(id){
       <button class="pkb" onclick="openStatus('${l.id}')">סטטוס ▾</button>
       ${l.phone?`<a class="pkb" href="tel:${esc(l.phone)}">📞</a>`:''}
       <button class="pkb" onclick="openEdit('${l.id}')">✏️</button>
+      ${isDropped(l)?`<button class="pkb g" onclick="restoreLead('${l.id}','map')">↩️ החזר לפעילות</button>`:''}
       ${agri&&!l.agriAck?`<button class="pkb g" onclick="openAgriAck('${l.id}')">⚠️ אישור חקלאי</button>`:''}
     </div>`;
   L.popup({maxWidth:290,autoPanPadding:[40,90]}).setLatLng(c).setContent(html).openOn(MAP);
@@ -1056,20 +1127,77 @@ function pinFromMap(id){ PIN_FOR=id; closeSheet(); nav('map'); toast('📌 לח�
 /* שינוי סטטוס + יומן */
 function openStatus(id){
   const l=DATA.leads.find(x=>x.id===id); if(!l)return;
+  const drop=isDropped(l);
   openSheet(`
     <div class="grab"></div><h3>סטטוס: ${esc(l.title||'')}</h3>
+    ${drop?`<div class="dropbnr">🚫 סימנת שהליד כבר לא רלוונטי — הוא יורד מהרשימה, מתור הפעולות ומהדוחות,
+      אבל <b>נשאר על המפה בתג אפור שקוף</b> כדי שתזכור שיש שם הצעה. כל היומן נשמר.
+      <br><button class="btn sm" style="margin-top:9px" onclick="restoreLead('${id}')">↩️ החזר לפעילות</button></div>`:''}
     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
       ${STATUSES.map(s=>`<button class="chip ${l.status===s[0]?'on':''}" onclick="setStatus('${id}','${s[0]}')">${s[1]}</button>`).join('')}
     </div>
     <div class="fld" style="margin-top:4px"><label>➕ הערה ליומן (בלי לשנות סטטוס)</label>
       <textarea id="logNote" rows="2" placeholder="דיברתי עם המתווך / ראיתי מהכביש / …"></textarea></div>
-    <button class="btn p sm" style="margin-bottom:14px" onclick="addLogNote('${id}')">שמור הערה ליומן ✓</button>
-    <h3 style="font-size:14px">📖 יומן — מה קרה</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn p sm" onclick="addLogNote('${id}')">שמור הערה ליומן ✓</button>
+      <button class="btn sm" onclick="newTask('${id}')">🗒️ פתח משימה</button>
+      ${drop?'':`<button class="btn sm" onclick="dropLead('${id}')">🚫 כבר לא רלוונטי</button>`}
+    </div>
+    <h3 style="font-size:14px">📖 יומן — מה קרה <span class="mutetxt" style="font-weight:600">· ✏️ לעריכת רישום</span></h3>
     <div style="max-height:36vh;overflow-y:auto">
-    ${(l.log||[]).map(e=>`<div class="card" style="padding:9px 12px;margin-bottom:7px">
-      <b style="font-size:12.5px">${stLbl(e.st)}</b> <span class="mutetxt">· ${e.by||''} · ${new Date(e.at).toLocaleDateString('he-IL')}</span>
-      ${e.note?`<div style="font-size:12.5px;margin-top:2px">${esc(e.note)}</div>`:''}</div>`).join('')||'<div class="mutetxt">אין רישומים עדיין</div>'}
+    ${(l.log||[]).map(e=>logRowHtml(id,e)).join('')||'<div class="mutetxt">אין רישומים עדיין</div>'}
     </div>`);
+}
+/* 3.0.17: שורת יומן עם כפתור עריכה */
+function logRowHtml(id,e){
+  const at=Number(e.at)||0;
+  return `<div class="card logrow" style="padding:9px 12px;margin-bottom:7px">
+    ${at?`<button class="logedit" title="ערוך את ההערה" onclick="editLogNote('${id}',${at})">✏️</button>`:''}
+    <b style="font-size:12.5px">${esc(stLbl(e.st))}</b> <span class="mutetxt">· ${esc(e.by||'')} · ${at?new Date(at).toLocaleDateString('he-IL'):''}</span>
+    ${e.note?`<div style="font-size:12.5px;margin-top:2px">${esc(e.note)}</div>`
+            :'<div class="mutetxt" style="font-size:12px;margin-top:2px">(בלי הערה)</div>'}
+    ${e.edited?`<div class="mutetxt" style="font-size:10.5px;margin-top:4px">✏️ נערך ${new Date(e.edited).toLocaleDateString('he-IL')}${e.editedBy?' · '+esc(e.editedBy):''}${e.wasNote?' · במקור: "'+esc(String(e.wasNote).slice(0,60))+'"':''}</div>`:''}</div>`;
+}
+/* 3.0.17: עריכת רישום ביומן. הרישום מזוהה לפי חותמת הזמן שלו (at) ולא לפי מקומו
+   במערך — כדי שרישום שהשותף הוסיף בינתיים לא יגרום לעריכת השורה הלא נכונה.
+   הטקסט המקורי נשמר ב-wasNote, כדי שהיומן יישאר אמין. */
+function editLogNote(id,at){
+  const l=DATA.leads.find(x=>x.id===id); if(!l)return;
+  const log=(l.log||[]).slice();
+  const i=log.findIndex(e=>Number(e.at)===Number(at));
+  if(i<0){ toast('הרישום לא נמצא — רענן ונסה שוב'); return; }
+  const cur=String(log[i].note||'');
+  const v=prompt('ערוך את ההערה ביומן:',cur);
+  if(v===null)return;
+  if(v.trim()===cur.trim()){ toast('לא שונה כלום'); return; }
+  log[i]=Object.assign({},log[i],{note:v.trim(),edited:Date.now(),editedBy:WHO(),wasNote:log[i].wasNote||cur});
+  DB.collection('leads').doc(id).update({log,by:WHO(),at:Date.now()})
+    .then(()=>{ toast('ההערה עודכנה ✓'); openStatus(id); })
+    .catch(e=>toast('שגיאה: '+e.code));
+}
+/* 3.0.17: "כבר לא רלוונטי" — ארכיון עם סיבה, לא מחיקה */
+function dropLead(id){
+  const l=DATA.leads.find(x=>x.id===id); if(!l)return;
+  const why=prompt('למה הליד כבר לא רלוונטי?\n(נמכר / מחיר לא ריאלי / לא עונים / לא מתאים לי…)','');
+  if(why===null)return;
+  const log=(l.log||[]).slice();
+  log.unshift({st:DROPPED,note:'לא רלוונטי'+(why.trim()?' — '+why.trim():''),by:WHO(),at:Date.now()});
+  DB.collection('leads').doc(id).update({status:DROPPED,prevStatus:l.status||'new',droppedAt:Date.now(),
+    log,by:WHO(),at:Date.now()})
+    .then(()=>{ toast('🚫 לא רלוונטי — נשאר על המפה באפור'); closeSheet(); if(MAP)MAP.closePopup(); })
+    .catch(e=>toast('שגיאה: '+e.code));
+}
+function restoreLead(id,from){
+  const l=DATA.leads.find(x=>x.id===id); if(!l)return;
+  const back=l.prevStatus||'new';
+  const log=(l.log||[]).slice();
+  log.unshift({st:back,note:'הוחזר לפעילות',by:WHO(),at:Date.now()});
+  DB.collection('leads').doc(id).update({status:back,droppedAt:null,log,by:WHO(),at:Date.now()})
+    .then(()=>{ toast('↩️ הליד חזר לפעילות ✓');
+      /* מרעננים את מה שפתוח מול העיניים: גיליון סטטוס, או הבועה על המפה */
+      if(document.getElementById('overlay').classList.contains('show'))openStatus(id);
+      else if(from==='map'&&MAP)setTimeout(()=>openLeadPopup(id),60); })
+    .catch(e=>toast('שגיאה: '+e.code));
 }
 function addLogNote(id){
   const l=DATA.leads.find(x=>x.id===id); if(!l)return;
@@ -1121,7 +1249,7 @@ function nav(s){
 function refreshScreens(){ if(CUR!=='map')renderScreen(CUR); }
 function renderScreen(s){
   try{
-    ({leads:renderLeads,tour:renderTour,feed:renderFeed,reports:renderReports,sprint:renderSprint,
+    ({leads:renderLeads,tasks:renderTasks,tour:renderTour,feed:renderFeed,reports:renderReports,sprint:renderSprint,
       profile:renderProfile,health:renderHealth,users:renderUsers,more:renderMore}[s]||(()=>{}))();
   }catch(e){ clog('error','render '+s+': '+(e.message||e));
     const el=document.querySelector('#scrn-'+s+' .scrn-body');
@@ -1135,15 +1263,19 @@ function renderLeads(){
   document.getElementById('leadFilters').innerHTML=
     [['all','הכל'],['buy','🏷️ קנייה'],['rent','🔑 השכרה']].map(d=>`<button class="chip ${LF.deal===d[0]?'on':''}" onclick="LF.deal='${d[0]}';renderLeads()">${d[1]}</button>`).join('')+
     '<span style="width:8px"></span>'+
-    [['all','הכל'],...STATUSES].map(s=>`<button class="chip ${LF.status===s[0]?'on':''}" onclick="LF.status='${s[0]}';renderLeads()">${s[1]}</button>`).join('')+
+    [['all','הכל'],...ST_ALL].map(s=>`<button class="chip ${LF.status===s[0]?'on':''}" onclick="LF.status='${s[0]}';renderLeads()">${s[1]}</button>`).join('')+
     '<span style="width:8px"></span>'+
     zopts.map(z=>`<button class="chip ${LF.zone===z[0]?'on':''}" onclick="LF.zone='${z[0]}';renderLeads()">🗺️ ${esc(z[1])}</button>`).join('');
   let list=DATA.leads.slice();
   if(LF.deal!=='all')list=list.filter(l=>LF.deal==='rent'?isRent(l):!isRent(l));
-  if(LF.status!=='all')list=list.filter(l=>l.status===LF.status);
+  /* 🚫 ארכיון מוסתר כברירת מחדל — נראה רק כשבוחרים במפורש "לא רלוונטי" */
+  if(LF.status==='all')list=list.filter(l=>!isDropped(l));
+  else list=list.filter(l=>l.status===LF.status);
   if(LF.zone!=='all')list=list.filter(l=>{ const z=zoneOf(l); return z&&z.id===LF.zone; });
   list.sort((a,b)=>(b.at||0)-(a.at||0));
-  document.getElementById('leadList').innerHTML=list.map(leadRowHtml).join('')||'<div class="mutetxt" style="text-align:center;padding:30px">אין לידים בסינון הזה</div>';
+  const nd=DATA.leads.filter(isDropped).length;
+  document.getElementById('leadList').innerHTML=(list.map(leadRowHtml).join('')||'<div class="mutetxt" style="text-align:center;padding:30px">אין לידים בסינון הזה</div>')
+    +(LF.status==='all'&&nd?`<div class="mutetxt" style="text-align:center;padding:14px 0">🚫 ${nd} לידים בארכיון (לא רלוונטיים) — לחץ על הסינון "לא רלוונטי" כדי לראות אותם</div>`:'');
 }
 function leadRowHtml(l){
   const agri=isAgri(l), c=leadCoords(l), d=(MYPOS&&c)?distKm(MYPOS,c):null;
@@ -1160,8 +1292,167 @@ function leadRowHtml(l){
     <div class="lr-acts">
       ${wazeUrl(l)?`<a class="sqbtn w" href="${wazeUrl(l)}" target="_blank" rel="noopener">🚗</a>`:''}
       <button class="sqbtn" onclick="openEdit('${l.id}')">✏️</button>
+      ${isDropped(l)?`<button class="sqbtn" title="החזר לפעילות" onclick="restoreLead('${l.id}')">↩️</button>`
+                    :`<button class="sqbtn" title="כבר לא רלוונטי" onclick="dropLead('${l.id}')">🚫</button>`}
       ${c?`<button class="sqbtn" onclick="nav('map');MAP.flyTo([${c[0]},${c[1]}],16)">🗺️</button>`:''}
     </div></div>`;
+}
+
+/* ═══════════ 🗒️ משימות — טבלת שליטה · 3.0.17 ═══════════
+   אוסף tasks ב-Firestore. משימה = שורה: מה לעשות, לאיזה ליד, עד מתי, כמה דחוף, מי אחראי.
+   הטבלה ממוינת בלחיצה על כותרת, ומסמנת באדום מה שבאיחור ובצהוב מה שלהיום. */
+const PRI={1:'🔴 גבוהה',2:'🟠 רגילה',3:'⚪ נמוכה'};
+let TF={view:'open',owner:'all',sort:'due',dir:1,_own:[]};
+function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function taskDueTs(t){ const d=dueDate(t.due); return d?d.getTime():null; }
+function taskState(t){
+  if(t.done)return 'done';
+  const ts=taskDueTs(t); if(ts==null)return 'open';
+  if(ts<todayStart())return 'late';
+  if(ts<todayStart()+86400000)return 'today';
+  return 'open';
+}
+function taskLead(t){ return t.leadId?DATA.leads.find(x=>x.id===t.leadId):null; }
+function taskOwners(){ const s=new Set([WHO()]);
+  (DATA.tasks||[]).forEach(t=>{ if(t.owner)s.add(t.owner); });
+  (DATA.allowed||[]).forEach(a=>{ if(a.name)s.add(a.name); });
+  return [...s].filter(Boolean); }
+function tkSort(k){ if(TF.sort===k)TF.dir=-TF.dir; else{ TF.sort=k; TF.dir=1; } renderTasks(); }
+function tasksFiltered(){
+  let list=(DATA.tasks||[]).slice();
+  if(TF.view==='open')      list=list.filter(t=>!t.done);
+  else if(TF.view==='today')list=list.filter(t=>taskState(t)==='today'||taskState(t)==='late');
+  else if(TF.view==='late') list=list.filter(t=>taskState(t)==='late');
+  else if(TF.view==='done') list=list.filter(t=>!!t.done);
+  if(TF.owner!=='all')list=list.filter(t=>String(t.owner||'')===TF.owner);
+  const k=TF.sort;
+  list.sort((a,b)=>{
+    let va,vb;
+    if(k==='due'){ va=taskDueTs(a); vb=taskDueTs(b); va=(va==null?9e15:va); vb=(vb==null?9e15:vb); }
+    else if(k==='pri'){ va=Number(a.pri||2); vb=Number(b.pri||2); }
+    else if(k==='title'){ va=String(a.title||''); vb=String(b.title||''); }
+    else if(k==='owner'){ va=String(a.owner||''); vb=String(b.owner||''); }
+    else if(k==='lead'){ const la=taskLead(a),lb=taskLead(b); va=la?String(la.title||''):'זזז'; vb=lb?String(lb.title||''):'זזז'; }
+    else { va=Number(a.at||0); vb=Number(b.at||0); }
+    return (va>vb?1:va<vb?-1:0)*TF.dir;
+  });
+  return list;
+}
+function updateTaskBadge(){
+  const n=(DATA.tasks||[]).filter(t=>!t.done&&taskState(t)!=='open').length;   // באיחור או להיום
+  const e=document.getElementById('taskBadge'); if(!e)return;
+  e.classList.toggle('hide',!n); e.textContent=n>9?'9+':String(n);
+}
+function renderTasks(){
+  const all=(DATA.tasks||[]), open=all.filter(t=>!t.done);
+  const late=open.filter(t=>taskState(t)==='late').length;
+  const tod =open.filter(t=>taskState(t)==='today').length;
+  document.getElementById('taskKpis').innerHTML=
+    `<div class="kpi"><b>${open.length}</b><span>🗒️ פתוחות</span></div>
+     <div class="kpi"><b style="color:${tod?'var(--t2)':'var(--muted)'}">${tod}</b><span>📅 להיום</span></div>
+     <div class="kpi"><b style="color:${late?'var(--clay)':'var(--muted)'}">${late}</b><span>⏰ באיחור</span></div>`;
+  TF._own=taskOwners();
+  document.getElementById('taskFilters').innerHTML=
+    [['open','פתוחות'],['today','להיום'],['late','באיחור'],['done','בוצעו'],['all','הכל']]
+      .map(v=>`<button class="chip ${TF.view===v[0]?'on':''}" onclick="TF.view='${v[0]}';renderTasks()">${v[1]}</button>`).join('')
+    +'<span style="width:8px"></span>'
+    +`<button class="chip ${TF.owner==='all'?'on':''}" onclick="TF.owner='all';renderTasks()">👤 כולם</button>`
+    +TF._own.map((o,i)=>`<button class="chip ${TF.owner===o?'on':''}" onclick="TF.owner=TF._own[${i}];renderTasks()">👤 ${esc(o)}</button>`).join('');
+  const list=tasksFiltered(), ar=k=>TF.sort===k?(TF.dir>0?' ▲':' ▼'):'';
+  document.getElementById('taskTable').innerHTML=list.length?`<div class="tkwrap"><table class="tk">
+    <thead><tr>
+      <th style="width:36px"></th>
+      <th class="${TF.sort==='title'?'on':''}" onclick="tkSort('title')">משימה${ar('title')}</th>
+      <th class="m-hide ${TF.sort==='lead'?'on':''}" onclick="tkSort('lead')">ליד מקושר${ar('lead')}</th>
+      <th class="${TF.sort==='due'?'on':''}" onclick="tkSort('due')">יעד${ar('due')}</th>
+      <th class="${TF.sort==='pri'?'on':''}" onclick="tkSort('pri')">עדיפות${ar('pri')}</th>
+      <th class="m-hide ${TF.sort==='owner'?'on':''}" onclick="tkSort('owner')">אחראי${ar('owner')}</th>
+      <th style="width:86px"></th>
+    </tr></thead><tbody>${list.map(taskRowHtml).join('')}</tbody></table></div>`
+   :`<div class="mutetxt" style="text-align:center;padding:34px">אין משימות בסינון הזה.<br>לחץ <b>➕ משימה</b> למעלה כדי להוסיף אחת.</div>`;
+}
+function taskRowHtml(t){
+  const st=taskState(t), l=taskLead(t), p=Math.min(3,Math.max(1,Number(t.pri||2)));
+  return `<tr class="${t.done?'done':st==='late'?'late':st==='today'?'today':''}">
+    <td><button class="cbx ${t.done?'on':''}" title="סמן כבוצע" onclick="toggleTask('${t.id}')">${t.done?'✓':''}</button></td>
+    <td class="tkt" onclick="openTask('${t.id}')">${esc(t.title||'משימה')}
+      ${t.note?`<div class="mutetxt" style="font-weight:600;font-size:11px;margin-top:2px">${esc(String(t.note).slice(0,70))}</div>`:''}</td>
+    <td class="m-hide">${l?`<span class="lnk" onclick="gotoLead('${l.id}')">📍 ${esc(String(l.title||'ליד').slice(0,26))}</span>`:'<span class="mutetxt">—</span>'}</td>
+    <td class="dcell">${t.due?fmtDue(t.due):'<span class="mutetxt">—</span>'}${(st==='late')?' ⏰':''}</td>
+    <td><span class="pdot pr${p}"></span>${PRI[p].replace(/^\S+\s/,'')}</td>
+    <td class="m-hide">${esc(t.owner||'—')}</td>
+    <td class="acts"><button title="ערוך" onclick="openTask('${t.id}')">✏️</button><button title="מחק" onclick="delTask('${t.id}')">🗑</button></td>
+  </tr>`;
+}
+function gotoLead(id){
+  const l=DATA.leads.find(x=>x.id===id); if(!l){ toast('הליד נמחק'); return; }
+  const c=leadCoords(l);
+  if(c){ nav('map'); MAP.flyTo(c,15); setTimeout(()=>openLeadPopup(id),420); }
+  else openStatus(id);
+}
+function newTask(leadId){ openTaskSheet(null,leadId||''); }
+function openTask(id){ const t=(DATA.tasks||[]).find(x=>x.id===id); if(t)openTaskSheet(t,''); }
+function openTaskSheet(t,leadId){
+  const cur=t||{}, lid=cur.leadId||leadId||'', own=cur.owner!==undefined?cur.owner:WHO();
+  const leadOpts=DATA.leads.filter(l=>!isDropped(l)||l.id===lid).sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,300);
+  openSheet(`<div class="grab"></div><h3>${t?'✏️ עריכת משימה':'➕ משימה חדשה'}</h3>
+    <div class="fld"><label>מה צריך לעשות *</label>
+      <input id="tkTitle" value="${esc(cur.title||'')}" placeholder="להתקשר למתווך / להזמין נסח טאבו / לקבוע ביקור…"></div>
+    <div class="frow">
+      <div class="fld"><label>תאריך יעד</label><input id="tkDue" type="date" value="${esc(cur.due||'')}"></div>
+      <div class="fld"><label>עדיפות</label><select id="tkPri">
+        ${[1,2,3].map(p=>`<option value="${p}" ${Number(cur.pri||2)===p?'selected':''}>${PRI[p]}</option>`).join('')}</select></div>
+    </div>
+    <div class="fld"><label>אחראי</label><select id="tkOwner">
+      <option value="">— ללא —</option>
+      ${taskOwners().map(o=>`<option value="${esc(o)}" ${own===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>
+    <div class="fld"><label>ליד מקושר (לא חובה)</label><select id="tkLead">
+      <option value="">— ללא —</option>
+      ${leadOpts.map(l=>`<option value="${l.id}" ${lid===l.id?'selected':''}>${esc(String(l.title||'ליד').slice(0,40))}${l.town?' · '+esc(l.town):''}</option>`).join('')}</select></div>
+    <div class="fld"><label>פירוט (לא חובה)</label><textarea id="tkNote" rows="2">${esc(cur.note||'')}</textarea></div>
+    <button class="btn p" style="width:100%;padding:13px" onclick="saveTask('${t?t.id:''}')">${t?'שמור שינויים ✓':'הוסף משימה ✓'}</button>
+    ${t?`<button class="btn warn" style="width:100%;padding:11px;margin-top:8px" onclick="delTask('${t.id}')">🗑 מחק משימה</button>`:''}`);
+}
+function saveTask(id){
+  const title=document.getElementById('tkTitle').value.trim();
+  if(!title){ toast('כתוב קודם מה צריך לעשות 🙂'); return; }
+  const d={title,
+    due:document.getElementById('tkDue').value||'',
+    pri:Number(document.getElementById('tkPri').value||2),
+    owner:document.getElementById('tkOwner').value||'',
+    leadId:document.getElementById('tkLead').value||'',
+    note:document.getElementById('tkNote').value.trim(),
+    by:WHO(),at:Date.now()};
+  const p=id?DB.collection('tasks').doc(id).update(d)
+            :DB.collection('tasks').add(Object.assign({},d,{done:false,createdAt:Date.now(),createdBy:WHO()}));
+  p.then(()=>{ toast(id?'המשימה עודכנה ✓':'המשימה נוספה ✓'); closeSheet(); })
+   .catch(e=>toast('שגיאה: '+(e.code||e.message)));
+}
+function toggleTask(id){
+  const t=(DATA.tasks||[]).find(x=>x.id===id); if(!t)return;
+  const done=!t.done;
+  DB.collection('tasks').doc(id).update({done,doneAt:done?Date.now():null,doneBy:done?WHO():'',at:Date.now()})
+    .then(()=>toast(done?'בוצע ✓':'הוחזר לפתוחות'))
+    .catch(e=>toast('שגיאה: '+(e.code||e.message)));
+}
+function delTask(id){
+  if(!confirm('למחוק את המשימה?'))return;
+  DB.collection('tasks').doc(id).delete()
+    .then(()=>{ toast('נמחק'); closeSheet(); })
+    .catch(e=>toast('שגיאה: '+(e.code||e.message)));
+}
+function exportTasksCSV(){
+  const list=tasksFiltered();
+  const head=['משימה','ליד מקושר','יישוב','תאריך יעד','עדיפות','אחראי','בוצע','נוצר ע"י','פירוט'];
+  const rows=list.map(t=>{ const l=taskLead(t);
+    return [t.title,l?l.title:'',l?l.town:'',t.due?fmtDue(t.due):'',
+      (PRI[Math.min(3,Math.max(1,Number(t.pri||2)))]||'').replace(/^\S+\s/,''),
+      t.owner,t.done?'כן':'לא',t.createdBy||t.by||'',(t.note||'').replace(/\n/g,' ')]
+      .map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(','); });
+  const blob=new Blob(['﻿'+head.join(',')+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='tasks-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  toast('📥 הקובץ ירד — נפתח באקסל');
 }
 
 /* ─── מסך סיור ─── */
@@ -1260,16 +1551,18 @@ function repLeads(){
   let list=DATA.leads.slice();
   if(REP.deal!=='all')list=list.filter(l=>REP.deal==='rent'?isRent(l):!isRent(l));
   if(REP.zone!=='all')list=list.filter(l=>{ const z=zoneOf(l); return z&&z.id===REP.zone; });
+  /* 🚫 לידים בארכיון לא מעוותים את הסטטיסטיקה — אלא אם ביקשת אותם במפורש */
   if(REP.status!=='all')list=list.filter(l=>l.status===REP.status);
+  else list=list.filter(l=>!isDropped(l));
   if(REP.tier!=='all')list=list.filter(l=>tierOf(l)===Number(REP.tier));
-  if(REP.days)list=list.filter(l=>(l.at||0)>Date.now()-REP.days*86400000);
+  if(REP.days)list=list.filter(l=>createdAt(l)>Date.now()-REP.days*86400000); // לפי תאריך הוספה, לא לפי עריכה אחרונה
   return list;
 }
 function renderReports(){
   const zopts=[['all','כל הגזרות'],...DATA.zones.map(z=>[z.id,z.name||'גזרה'])];
   document.getElementById('slicers').innerHTML=
     `<select class="chip" onchange="REP.zone=this.value;renderReports()">${zopts.map(z=>`<option value="${z[0]}" ${REP.zone===z[0]?'selected':''}>🗺️ ${esc(z[1])}</option>`).join('')}</select>
-     <select class="chip" onchange="REP.status=this.value;renderReports()"><option value="all">🏷️ כל הסטטוסים</option>${STATUSES.map(s=>`<option value="${s[0]}" ${REP.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}</select>
+     <select class="chip" onchange="REP.status=this.value;renderReports()"><option value="all">🏷️ כל הסטטוסים (בלי ארכיון)</option>${ST_ALL.map(s=>`<option value="${s[0]}" ${REP.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}</select>
      <select class="chip" onchange="REP.tier=this.value;renderReports()"><option value="all">💰 כל ה-Tiers</option><option value="1" ${REP.tier==='1'?'selected':''}>Tier 1</option><option value="2" ${REP.tier==='2'?'selected':''}>Tier 2</option><option value="3" ${REP.tier==='3'?'selected':''}>Tier 3</option></select>
      <select class="chip" onchange="REP.days=Number(this.value);renderReports()"><option value="0">📅 כל הזמן</option><option value="7" ${REP.days===7?'selected':''}>שבוע</option><option value="30" ${REP.days===30?'selected':''}>30 יום</option><option value="90" ${REP.days===90?'selected':''}>90 יום</option></select>
      <select class="chip" onchange="REP.deal=this.value;renderReports()"><option value="all">🏠 קנייה+השכרה</option><option value="buy" ${REP.deal==='buy'?'selected':''}>🏷️ קנייה</option><option value="rent" ${REP.deal==='rent'?'selected':''}>🔑 השכרה</option></select>`;
@@ -1398,7 +1691,9 @@ async function renderHealth(){
     [ME?'ok':'bad','זהות והרשאה',ME?('מחובר: '+esc(ME.email||ME.phoneNumber)+' · תפקיד: <b>'+
       (MY_ALLOWED?(MY_ALLOWED.role==='admin'?'👑 מנהל':'שותף'):'?')+'</b> · מזהה: <code>'+ME.uid.slice(0,8)+'…</code>'):'לא מחובר'],
     [DATA.leads.length?'ok':'warn','מסד נתונים',
-      'לידים: <b>'+DATA.leads.length+'</b> · פיד: <b>'+DATA.feed.length+'</b> · גזרות: <b>'+DATA.zones.length+
+      'לידים פעילים: <b>'+DATA.leads.filter(l=>!isDropped(l)).length+'</b> (בארכיון: '+DATA.leads.filter(isDropped).length+
+      ') · משימות פתוחות: <b>'+(DATA.tasks||[]).filter(t=>!t.done).length+
+      '</b> · פיד: <b>'+DATA.feed.length+'</b> · גזרות: <b>'+DATA.zones.length+
       '</b> · מורשים: <b>'+DATA.allowed.length+'</b>'+(lastLead?' · עדכון ליד אחרון: '+new Date(lastLead).toLocaleString('he-IL'):'')],
     [ageH==null?'warn':(ageH<3?'ok':ageH<26?'warn':'bad'),'צינור המיילים',
       ageH==null?'עוד לא רץ מול Firestore — ודא שה-Secret FIREBASE_SERVICE_ACCOUNT הוגדר בריפו':
@@ -1416,7 +1711,9 @@ async function renderHealth(){
   TECH_REPORT={generated:new Date().toISOString(),app_version:APP_VERSION,build,
     project:configOK?firebaseConfig.projectId:null,user:ME?(ME.email||ME.phoneNumber):null,
     role:MY_ALLOWED?MY_ALLOWED.role:null,latency_ms:latency,pwa:isPWA,sw:swOK,layout:isDesktop()?'desktop':'mobile',
-    data:{leads:DATA.leads.length,feed:DATA.feed.length,zones:DATA.zones.length,allowed:DATA.allowed.length,lastLeadAt:lastLead||null},
+    data:{leads:DATA.leads.length,dropped:DATA.leads.filter(isDropped).length,tasks:(DATA.tasks||[]).length,
+      tasksOpen:(DATA.tasks||[]).filter(t=>!t.done).length,
+      feed:DATA.feed.length,zones:DATA.zones.length,allowed:DATA.allowed.length,lastLeadAt:lastLead||null},
     pipeline:pl,online:navigator.onLine,listeners:UNSUB.length,
     screen:screen.width+'x'+screen.height,ua:navigator.userAgent.slice(0,80),log:CLIENT_LOG.slice(0,15)};
 }
@@ -1462,7 +1759,7 @@ function removeUser(id){ if(!confirm('להסיר את '+id+' מהמערכת?'))r
 /* ─── עוד (טלפון) ─── */
 function renderMore(){
   document.getElementById('moreBody').innerHTML=`
-    ${[['reports','📈 דוחות'],['sprint','🎯 ספרינט'],['profile','⚙️ פרופיל סינון'],['health','🩺 מצב המערכת'],['users','👥 משתמשים']]
+    ${[['tasks','🗒️ משימות'],['reports','📈 דוחות'],['sprint','🎯 ספרינט'],['profile','⚙️ פרופיל סינון'],['health','🩺 מצב המערכת'],['users','👥 משתמשים']]
       .map(([s,t])=>`<button class="card" style="width:100%;text-align:start;font-size:15px;font-weight:700" onclick="nav('${s}')">${t}</button>`).join('')}
     <div class="card">
       <h3>🔎 חיפוש מקום במפה</h3>
@@ -1557,39 +1854,96 @@ function openBell(){
     <button class="btn p" style="width:100%;margin-top:8px" onclick="store.set('kz_bellseen',String(Date.now()));updateBell();closeSheet()">✓ סמן הכל כנקרא</button>`);
 }
 
-/* ─── תמונת מצב (מחשב) ─── */
-function toggleDash(){ const d=document.getElementById('dashpanel');
-  d.classList.toggle('dshow'); if(!isDesktop()){ // בטלפון — נפתח כ-sheet
-    d.classList.remove('dshow'); openSheet(`<div class="grab"></div><h3>📊 תמונת מצב</h3><div class="kpirow">${dashKpisHtml()}</div>${dashLinesHtml()}`); }
-  else renderDash(); }
+/* ─── תמונת מצב · 3.0.16 — מודדת פעולות שלי, לא מלאי של אחרים ─── */
+const DAY=86400000;
+function callGoal(){ return Math.max(1,Number(store.get('kz_callgoal')||5)); }
+function setCallGoal(){ const v=prompt('כמה שיחות אתה מתחייב לעשות השבוע?',callGoal());
+  if(v!==null&&Number(v)>0){ store.set('kz_callgoal',String(Math.round(Number(v)))); renderDash(); toast('יעד עודכן ✓'); } }
+/* ספירת פעולות ביומן: כמה רישומים נעשו מאז ms (אופציונלי — רק לסטטוס מסוים) */
+function actsSince(ms,st){ let n=0;
+  DATA.leads.forEach(l=>(l.log||[]).forEach(e=>{ if((e.at||0)>=ms&&(!st||e.st===st))n++; }));
+  return n; }
+/* מתי נגעו בליד בפעם האחרונה */
+function lastTouch(l){ let t=Math.max(Number(l.at)||0,createdAt(l)||0);
+  (l.log||[]).forEach(e=>{ if((e.at||0)>t)t=e.at; }); return t; }
+/* תור הפעולות — מה דורש ממני משהו עכשיו, לפי דחיפות */
+function needAction(){
+  const now=Date.now(), out=[];
+  DATA.leads.forEach(l=>{
+    if(isDropped(l))return;                            // 🚫 ארכיון — לא דורש כלום
+    if(l.status==='offer')return;                      // הצעה הוגשה — הכדור לא אצלי
+    const dd=dueDate(l.due), gap=Math.round((now-lastTouch(l))/DAY);
+    if(dd&&(dd-now)<DAY*5) out.push({l,p:0,why:'⏰ דדליין '+fmtDue(l.due)});
+    else if(tierOf(l)===1&&l.status==='new') out.push({l,p:1,why:'🔥 Tier 1 — עוד לא התקשרת'});
+    else if(l.status==='new'&&gap>=7) out.push({l,p:2,why:'📞 '+gap+' ימים ולא התקשרת'});
+    else if(gap>=14) out.push({l,p:3,why:'🧊 '+gap+' ימים בלי מגע'});
+  });
+  return out.sort((a,b)=>a.p-b.p||lastTouch(a.l)-lastTouch(b.l));
+}
 function dashKpisHtml(){
-  const t1=DATA.leads.filter(l=>tierOf(l)===1).length;
-  const nw=DATA.feed.filter(f=>(f.at||f._syncedAt||0)>Date.now()-86400000*3).length;
-  return `<div class="kpi g"><b>${t1}</b><span>Tier 1 חמים</span></div>
-    <div class="kpi"><b>${DATA.leads.length}</b><span>לידים פעילים</span></div>
-    <div class="kpi"><b>${nw}</b><span>חדשים בפיד (3 ימים)</span></div>`;
+  const w=Date.now()-DAY*7, g=callGoal();
+  const calls=actsSince(w,'called'), visits=actsSince(w,'visited');
+  const added=DATA.leads.filter(l=>createdAt(l)>=w).length;
+  const pct=Math.min(100,Math.round(calls/g*100)), cls=calls>=g?'':calls?'y':'r';
+  return `<div class="kpi" onclick="setCallGoal()" style="cursor:pointer" title="לחץ כדי לשנות את היעד השבועי">
+      <b style="color:${calls>=g?'var(--t1)':calls?'var(--t2)':'var(--t3)'}">${calls}<span style="font-size:13px;color:var(--muted)">/${g}</span></b>
+      <span>☎️ שיחות השבוע</span><div class="gbar ${cls}"><i style="width:${pct}%"></i></div></div>
+    <div class="kpi"><b>${visits}</b><span>🚶 ביקורים בשטח</span></div>
+    <div class="kpi"><b>${added}</b><span>➕ לידים שהוספת</span></div>`;
 }
 function dashLinesHtml(){
-  const lines=[];
-  DATA.leads.forEach(l=>{ const dd=dueDate(l.due); if(dd&&(dd-Date.now())<86400000*5)
-    lines.push(`<div class="dline warn">⏰ ${esc(l.title||'')} — עד ${fmtDue(l.due)}</div>`); });
-  partnerEvents().slice(0,3).forEach(e=>lines.push(`<div class="dline">${esc(e.txt).slice(0,70)}</div>`));
-  if(DATA.sprint&&DATA.sprint.deadline){ const d=Math.ceil((new Date(DATA.sprint.deadline+'T23:59')-Date.now())/86400000);
-    lines.push(`<div class="dline">🎯 ${d} ימים לדדליין הספרינט</div>`); }
-  return lines.join('')||'<div class="dline">שקט — אין התרעות 🙂</div>';
+  const na=needAction();
+  let h='<div class="dhdr">🎯 דורש ממך פעולה</div>';
+  h+= na.length ? na.slice(0,5).map(x=>{ const c=leadCoords(x.l);
+        return `<div class="dline${x.p===0?' warn':''}" style="cursor:pointer"
+          onclick="closeSheet();${c?`MAP.flyTo([${c[0]},${c[1]}],15);openLeadPopup('${x.l.id}')`:`nav('leads')`}">
+          <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.l.title||'ליד')}</div>
+          <div style="font-size:10.5px;font-weight:600;opacity:.75">${x.why}</div></div>`; }).join('')
+      : '<div class="dline">נקי — כל הלידים מטופלים 🙂</div>';
+  if(na.length>5)h+=`<div class="dline" style="cursor:pointer;text-align:center" onclick="closeSheet();nav('leads')">+${na.length-5} נוספים →</div>`;
+  /* 3.0.17: משימות שהיעד שלהן היום או עבר */
+  const tk=(DATA.tasks||[]).filter(t=>!t.done&&taskState(t)!=='open')
+    .sort((a,b)=>(taskDueTs(a)==null?9e15:taskDueTs(a))-(taskDueTs(b)==null?9e15:taskDueTs(b)));
+  if(tk.length){ h+='<div class="dhdr">🗒️ משימות</div>'+tk.slice(0,3).map(t=>
+      `<div class="dline${taskState(t)==='late'?' warn':''}" style="cursor:pointer" onclick="closeSheet();nav('tasks')">
+        <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title||'משימה')}</div>
+        <div style="font-size:10.5px;font-weight:600;opacity:.75">${taskState(t)==='late'?'⏰ באיחור':'📅 להיום'} · ${esc(fmtDue(t.due))}</div></div>`).join('');
+    if(tk.length>3)h+=`<div class="dline" style="cursor:pointer;text-align:center" onclick="closeSheet();nav('tasks')">+${tk.length-3} משימות →</div>`; }
+  const pe=partnerEvents().filter(e=>e.txt.indexOf('🤝')===0).slice(0,2);
+  if(pe.length)h+='<div class="dhdr">🤝 השותף</div>'+pe.map(e=>`<div class="dline">${esc(e.txt).slice(0,70)}</div>`).join('');
+  if(DATA.sprint&&DATA.sprint.deadline){ const d=Math.ceil((new Date(DATA.sprint.deadline+'T23:59')-Date.now())/DAY);
+    h+=`<div class="dline">🎯 ${d} ימים לדדליין הספרינט</div>`; }
+  return h;
 }
+/* גרף פעילות 7 ימים — כמה פעולות ביומן בכל יום */
+function dashSparkHtml(){
+  const NAMES=['א','ב','ג','ד','ה','ו','ש'], bars=[], lbl=[];
+  for(let i=6;i>=0;i--){ const s=new Date(); s.setHours(0,0,0,0); s.setDate(s.getDate()-i);
+    const a=s.getTime(), b=a+DAY; let n=0;
+    DATA.leads.forEach(l=>(l.log||[]).forEach(e=>{ if((e.at||0)>=a&&(e.at||0)<b)n++; }));
+    bars.push({n,today:i===0,d:NAMES[s.getDay()]}); }
+  const mx=Math.max(1,...bars.map(x=>x.n));
+  return `<div class="dhdr">📈 פעילות 7 ימים · ${bars.reduce((s,x)=>s+x.n,0)} פעולות</div>
+    <div class="spark">${bars.map(x=>`<i class="${x.today?'today':''}" style="height:${Math.max(3,Math.round(x.n/mx*30))}px" title="${x.n}"></i>`).join('')}</div>
+    <div class="sparkd">${bars.map(x=>`<span>${x.d}</span>`).join('')}</div>`;
+}
+/* בריאות הצינור — נראה לעין, כדי שכשל לא יהיה שקט */
+function dashPipeHtml(){
+  const lr=Number(DATA.pipeline&&DATA.pipeline.lastRun||0);
+  if(!lr)return '<div class="pipe bad">⚠️ הצינור: אין דיווח ריצה</div>';
+  const hrs=Math.round((Date.now()-lr)/3600000);
+  const ok=hrs<30;   // רץ פעם ביום — 30 שעות זה עוד סביר
+  return `<div class="pipe ${ok?'ok':'bad'}">${ok?'✓':'⚠️'} הצינור רץ לפני ${hrs<1?'פחות משעה':hrs+' שעות'}${DATA.pipeline.lastNew!=null?' · '+DATA.pipeline.lastNew+' ממצאים חדשים':''}</div>`;
+}
+function dashHtml(){ return `<div class="kpirow">${dashKpisHtml()}</div>${dashLinesHtml()}${dashSparkHtml()}${dashPipeHtml()}`; }
+function toggleDash(){ const d=document.getElementById('dashpanel');
+  d.classList.toggle('dshow'); if(!isDesktop()){ // בטלפון — נפתח כ-sheet
+    d.classList.remove('dshow'); openSheet(`<div class="grab"></div><h3>📊 תמונת מצב</h3>${dashHtml()}`); }
+  else renderDash(); }
 function renderDash(){ if(!document.getElementById('dashpanel').classList.contains('dshow'))return;
   document.getElementById('dashKpis').innerHTML=dashKpisHtml();
   document.getElementById('dashLines').innerHTML=dashLinesHtml();
-  // רשימת לידים מסכמת — לחיצה קופצת לליד על המפה
-  const ls=DATA.leads.slice().sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,7);
-  document.getElementById('dashLeads').innerHTML=ls.length?
-    '<div style="font-size:11px;font-weight:800;color:var(--muted);margin:8px 0 5px">📋 לידים אחרונים</div>'+
-    ls.map(l=>{ const c=leadCoords(l);
-      return `<div class="dline" style="cursor:pointer;display:flex;justify-content:space-between;gap:6px"
-        onclick="${c?`MAP.flyTo([${c[0]},${c[1]}],15);openLeadPopup('${l.id}')`:`nav('leads')`}">
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tierOf(l)===1?'🟢':tierOf(l)===2?'🟡':'🔴'} ${esc(l.title||'ליד')}</span>
-        <b style="flex-shrink:0">${l.price?fmtK(l.price):''}</b></div>`; }).join(''):'';
+  document.getElementById('dashLeads').innerHTML=dashSparkHtml()+dashPipeHtml();
 }
 
 /* ─── עדכון אוטומטי (version.json שנחתם ע"י ה-Action) ─── */
