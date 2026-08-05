@@ -1,15 +1,13 @@
 {
-  "land_type": "all",
   "max_price": 0,
-  "_land_type_options": "all | build_only",
-  "max_messages_per_run": 25,
+  "size_min_dunam": 0,
   "sources": {
-    "yad2": true,
     "alerts": true,
-    "facebook": true
+    "facebook": true,
+    "yad2": true
   },
-  "size_max_dunam": 0,
-  "keep_if_no_price": true,
+  "max_messages_per_run": 25,
+  "urgent_below": 450000,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -51,7 +49,9 @@
     "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
     "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
   ],
+  "_land_type_options": "all | build_only",
   "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "size_min_dunam": 0,
-  "urgent_below": 450000
+  "size_max_dunam": 0,
+  "land_type": "all",
+  "keep_if_no_price": true
 }
