@@ -1,5 +1,19 @@
 [
  {
+  "id": "800d15a361219607",
+  "ts": 1785942401,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏בתים במושבים ובקיבוצים בגליל המערבי‏",
+  "link": "https://www.facebook.com/nd/?groups%2Fmoshavim%2F&aref=1785938751756275&medium=email&mid=6584cfb4d9521G5af41325b406G6584d44e397f3G91&bcode=2.1785938753.Ab0_KJxdYV521FzGmUD0TQv0wR0&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKJumwYEckoK41yOBj2CyD8sWpn19I1QU7bBl8QgCqMvw",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "45fe31ca0593c4ed",
   "ts": 1785867690,
   "source": "yad2",
