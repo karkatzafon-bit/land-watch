@@ -1,10 +1,7 @@
 {
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "keep_if_no_price": true,
+  "size_min_dunam": 0,
+  "urgent_below": 450000,
   "max_messages_per_run": 25,
-  "size_max_dunam": 0,
-  "max_price": 0,
-  "_land_type_options": "all | build_only",
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -23,14 +20,17 @@
     "כרמל",
     "חוף הכרמל"
   ],
-  "size_min_dunam": 0,
+  "keep_if_no_price": true,
+  "size_max_dunam": 0,
+  "_land_type_options": "all | build_only",
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "max_price": 0,
   "land_type": "all",
   "sources": {
     "alerts": true,
     "yad2": true,
     "facebook": true
   },
-  "urgent_below": 450000,
   "keywords": [
     "מגרש",
     "מגרשים",
