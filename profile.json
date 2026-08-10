@@ -1,15 +1,16 @@
 {
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "urgent_below": 450000,
-  "land_type": "all",
-  "max_messages_per_run": 25,
-  "sources": {
-    "facebook": true,
-    "yad2": true,
-    "alerts": true
-  },
-  "size_max_dunam": 0,
-  "keep_if_no_price": true,
+  "keywords": [
+    "מגרש",
+    "מגרשים",
+    "קרקע",
+    "מכרז",
+    "בנייה עצמית",
+    "הרשמה והגרלה",
+    "נחלה",
+    "הרחבה",
+    "מגרשי בנייה",
+    "דונם"
+  ],
   "feeds": [
     "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
     "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
@@ -21,7 +22,19 @@
     "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
     "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
   ],
+  "max_price": 0,
+  "size_max_dunam": 0,
+  "land_type": "all",
+  "keep_if_no_price": true,
   "_land_type_options": "all | build_only",
+  "urgent_below": 450000,
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "sources": {
+    "alerts": true,
+    "facebook": true,
+    "yad2": true
+  },
+  "max_messages_per_run": 25,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -39,19 +52,6 @@
     "קצרין",
     "כרמל",
     "חוף הכרמל"
-  ],
-  "max_price": 0,
-  "keywords": [
-    "מגרש",
-    "מגרשים",
-    "קרקע",
-    "מכרז",
-    "בנייה עצמית",
-    "הרשמה והגרלה",
-    "נחלה",
-    "הרחבה",
-    "מגרשי בנייה",
-    "דונם"
   ],
   "size_min_dunam": 0
 }
