@@ -1,5 +1,19 @@
 [
  {
+  "id": "d9fd08b43879156b",
+  "ts": 1786538475,
+  "source": "web",
+  "kind": "listing",
+  "title": "שוטרי מחוז צפון הגיעו לחפש תושבי שטחים במסעדה בנוף הגליל ולאחר חשיפת שב\"ח במקום ניגשו לביתו של ...",
+  "link": "https://newzim.co.il/zafon/?p=83929",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "b1db6f46b1194c43",
   "ts": 1786470415,
   "source": "yad2",
