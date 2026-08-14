@@ -1,5 +1,19 @@
 [
  {
+  "id": "30334fcdaaa8a7c2",
+  "ts": 1786677816,
+  "source": "web",
+  "kind": "listing",
+  "title": "הפרשה בקיבוץ האון: המדינה תשווק קרקעות לעשרות וילות על הכנרת - אייס - Ice",
+  "link": "https://www.ice.co.il/realestate/news/article/1124616",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": true,
+  "reason": ""
+ },
+ {
   "id": "23e2ea5d78c9b4e9",
   "ts": 1786557020,
   "source": "yad2",
