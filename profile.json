@@ -1,12 +1,7 @@
 {
-  "keep_if_no_price": true,
-  "max_messages_per_run": 25,
+  "land_type": "all",
   "_land_type_options": "all | build_only",
-  "sources": {
-    "alerts": true,
-    "facebook": true,
-    "yad2": true
-  },
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
   "feeds": [
     "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
     "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
@@ -18,9 +13,11 @@
     "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
     "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
   ],
-  "land_type": "all",
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "size_min_dunam": 0,
   "max_price": 0,
+  "keep_if_no_price": true,
+  "urgent_below": 450000,
+  "max_messages_per_run": 25,
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -33,9 +30,6 @@
     "מגרשי בנייה",
     "דונם"
   ],
-  "urgent_below": 450000,
-  "size_min_dunam": 0,
-  "size_max_dunam": 0,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -53,5 +47,11 @@
     "קצרין",
     "כרמל",
     "חוף הכרמל"
-  ]
+  ],
+  "size_max_dunam": 0,
+  "sources": {
+    "alerts": true,
+    "yad2": true,
+    "facebook": true
+  }
 }
