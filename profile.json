@@ -1,5 +1,5 @@
 {
-  "max_price": 0,
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -12,6 +12,15 @@
     "מגרשי בנייה",
     "דונם"
   ],
+  "max_price": 0,
+  "urgent_below": 450000,
+  "size_max_dunam": 0,
+  "size_min_dunam": 0,
+  "sources": {
+    "facebook": true,
+    "yad2": true,
+    "alerts": true
+  },
   "feeds": [
     "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
     "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
@@ -25,10 +34,7 @@
   ],
   "_land_type_options": "all | build_only",
   "keep_if_no_price": true,
-  "urgent_below": 450000,
   "max_messages_per_run": 25,
-  "size_max_dunam": 0,
-  "size_min_dunam": 0,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -47,11 +53,5 @@
     "כרמל",
     "חוף הכרמל"
   ],
-  "land_type": "all",
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "sources": {
-    "alerts": true,
-    "yad2": true,
-    "facebook": true
-  }
+  "land_type": "all"
 }
