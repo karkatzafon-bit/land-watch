@@ -1,5 +1,19 @@
 [
  {
+  "id": "e1f90d149f7b3f4c",
+  "ts": 1786806557,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏האוניברסיטה הפתוחה‏",
+  "link": "https://www.facebook.com/nd/?groups%2F35992357910%2F&aref=1786804313345116&medium=email&mid=6591682cb498aG5af41325b406G65916cc614c5cG91&bcode=2.1786804318.Ab3wrTV3xL6lSPywAYyz63ox79Y&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAKDqstmKSahQ13ieXk4DwwbtzUpkNlNuxsQe-dN2wjNWQ",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "ae8e762f7dde9d86",
   "ts": 1786691131,
   "source": "web",
