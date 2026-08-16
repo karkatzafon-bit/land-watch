@@ -1,11 +1,17 @@
 {
-  "max_messages_per_run": 25,
-  "sources": {
-    "facebook": true,
-    "alerts": true,
-    "yad2": true
-  },
   "_land_type_options": "all | build_only",
+  "keywords": [
+    "מגרש",
+    "מגרשים",
+    "קרקע",
+    "מכרז",
+    "בנייה עצמית",
+    "הרשמה והגרלה",
+    "נחלה",
+    "הרחבה",
+    "מגרשי בנייה",
+    "דונם"
+  ],
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -24,24 +30,6 @@
     "כרמל",
     "חוף הכרמל"
   ],
-  "size_max_dunam": 0,
-  "keywords": [
-    "מגרש",
-    "מגרשים",
-    "קרקע",
-    "מכרז",
-    "בנייה עצמית",
-    "הרשמה והגרלה",
-    "נחלה",
-    "הרחבה",
-    "מגרשי בנייה",
-    "דונם"
-  ],
-  "max_price": 0,
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "size_min_dunam": 0,
-  "land_type": "all",
-  "urgent_below": 450000,
   "feeds": [
     "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
     "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
@@ -53,5 +41,17 @@
     "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
     "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
   ],
-  "keep_if_no_price": true
+  "urgent_below": 450000,
+  "land_type": "all",
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "sources": {
+    "yad2": true,
+    "alerts": true,
+    "facebook": true
+  },
+  "keep_if_no_price": true,
+  "size_min_dunam": 0,
+  "max_messages_per_run": 25,
+  "max_price": 0,
+  "size_max_dunam": 0
 }
