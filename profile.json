@@ -1,7 +1,10 @@
 {
-  "size_min_dunam": 0,
-  "keep_if_no_price": true,
   "max_messages_per_run": 25,
+  "sources": {
+    "facebook": true,
+    "alerts": true,
+    "yad2": true
+  },
   "_land_type_options": "all | build_only",
   "areas": [
     "יסוד המעלה",
@@ -21,15 +24,7 @@
     "כרמל",
     "חוף הכרמל"
   ],
-  "sources": {
-    "facebook": true,
-    "yad2": true,
-    "alerts": true
-  },
-  "max_price": 0,
   "size_max_dunam": 0,
-  "land_type": "all",
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -42,6 +37,10 @@
     "מגרשי בנייה",
     "דונם"
   ],
+  "max_price": 0,
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "size_min_dunam": 0,
+  "land_type": "all",
   "urgent_below": 450000,
   "feeds": [
     "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
@@ -53,5 +52,6 @@
     "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
     "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
     "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
-  ]
+  ],
+  "keep_if_no_price": true
 }
