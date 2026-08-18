@@ -1,36 +1,9 @@
 {
-  "_land_type_options": "all | build_only",
-  "areas": [
-    "יסוד המעלה",
-    "משמר הירדן",
-    "חולתה",
-    "מבואות חרמון",
-    "עמק החולה",
-    "גליל עליון",
-    "ראש פינה",
-    "חצור הגלילית",
-    "קרית שמונה",
-    "גליל מערבי",
-    "כנרת",
-    "טבריה",
-    "גולן",
-    "קצרין",
-    "כרמל",
-    "חוף הכרמל"
-  ],
-  "urgent_below": 450000,
-  "size_max_dunam": 0,
-  "keep_if_no_price": true,
   "sources": {
     "facebook": true,
     "yad2": true,
     "alerts": true
   },
-  "land_type": "all",
-  "max_price": 0,
-  "size_min_dunam": 0,
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "max_messages_per_run": 25,
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -53,5 +26,32 @@
     "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
     "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
     "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
-  ]
+  ],
+  "land_type": "all",
+  "max_messages_per_run": 25,
+  "keep_if_no_price": true,
+  "max_price": 0,
+  "size_min_dunam": 0,
+  "size_max_dunam": 0,
+  "urgent_below": 450000,
+  "areas": [
+    "יסוד המעלה",
+    "משמר הירדן",
+    "חולתה",
+    "מבואות חרמון",
+    "עמק החולה",
+    "גליל עליון",
+    "ראש פינה",
+    "חצור הגלילית",
+    "קרית שמונה",
+    "גליל מערבי",
+    "כנרת",
+    "טבריה",
+    "גולן",
+    "קצרין",
+    "כרמל",
+    "חוף הכרמל"
+  ],
+  "_land_type_options": "all | build_only",
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר."
 }
