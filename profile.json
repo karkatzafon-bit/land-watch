@@ -1,11 +1,4 @@
 {
-  "sources": {
-    "yad2": true,
-    "alerts": true,
-    "facebook": true
-  },
-  "keep_if_no_price": true,
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
   "_land_type_options": "all | build_only",
   "areas": [
     "יסוד המעלה",
@@ -27,8 +20,17 @@
   ],
   "urgent_below": 450000,
   "size_max_dunam": 0,
-  "max_price": 0,
+  "keep_if_no_price": true,
+  "sources": {
+    "facebook": true,
+    "yad2": true,
+    "alerts": true
+  },
   "land_type": "all",
+  "max_price": 0,
+  "size_min_dunam": 0,
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "max_messages_per_run": 25,
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -41,8 +43,6 @@
     "מגרשי בנייה",
     "דונם"
   ],
-  "max_messages_per_run": 25,
-  "size_min_dunam": 0,
   "feeds": [
     "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
     "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
