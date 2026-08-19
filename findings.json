@@ -1,5 +1,33 @@
 [
  {
+  "id": "31ae2d5d775da47e",
+  "ts": 1787120623,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏האוניברסיטה הפתוחה - סטודנטים לסטודנטים לומדים איך ללמוד.‏",
+  "link": "https://www.facebook.com/nd/?groups%2F2110146235981446%2F&aref=1787119914512006&medium=email&mid=6595ffe16ebb4G5af41325b406G6596047acee86G91&bcode=2.1787119916.Ab0Wf4hireZxMTpR48JwVirpvEI&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAJIFDHxds_uiqVBOZCRJQcAomBpZ0YXWj86B0fvRvYupA",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
+  "id": "02d92cefcab39c33",
+  "ts": 1787120602,
+  "source": "web",
+  "kind": "listing",
+  "title": "מפולת אסטרטגית  בגליל  - ynet",
+  "link": "https://www.ynet.co.il/news/article/yokra14870583",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "df8c6250ddbc3338",
   "ts": 1787073429,
   "source": "yad2",
