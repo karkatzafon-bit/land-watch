@@ -1,5 +1,19 @@
 [
  {
+  "id": "02044da28ea89b15",
+  "ts": 1787239367,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏משרות מדעי החיים בלבד!‏",
+  "link": "https://www.facebook.com/nd/?groups%2F212043839179264%2F&aref=1787236239708308&medium=email&mid=6597b139c8dc2G5af41325b406G6597b5d329094G91&bcode=2.1787236264.Ab3LDQLlrnEVJr4iHxYObbwOrZQ&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAIR5wcDXybDeywpU8q05_3bNmXq1SuChlavQItY6dNgNg",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "a07198460d929ef8",
   "ts": 1787159815,
   "source": "yad2",
