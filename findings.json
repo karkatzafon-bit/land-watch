@@ -1,5 +1,19 @@
 [
  {
+  "id": "1af4daf9656b74a3",
+  "ts": 1787404999,
+  "source": "web",
+  "kind": "listing",
+  "title": "לא הנחה ולא הגרלה: למילואימניקים מגיעה קרקע בחינם - מעריב",
+  "link": "https://www.maariv.co.il/economy/israel/article-1358011",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": true,
+  "reason": ""
+ },
+ {
   "id": "d5e29bfb189ae859",
   "ts": 1787346766,
   "source": "web",
