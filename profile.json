@@ -1,17 +1,5 @@
 {
-  "keep_if_no_price": true,
-  "feeds": [
-    "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
-    "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
-    "https://www.google.com/alerts/feeds/14392135715118895985/3196392219277136674",
-    "https://www.google.com/alerts/feeds/14392135715118895985/7737247213064390223",
-    "https://www.google.com/alerts/feeds/14392135715118895985/1472786581246698656",
-    "https://www.google.com/alerts/feeds/14392135715118895985/3213448284328784609",
-    "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
-    "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
-    "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
-  ],
-  "_land_type_options": "all | build_only",
+  "urgent_below": 450000,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -30,8 +18,6 @@
     "כרמל",
     "חוף הכרמל"
   ],
-  "size_min_dunam": 0,
-  "max_messages_per_run": 25,
   "keywords": [
     "מגרש",
     "מגרשים",
@@ -44,14 +30,28 @@
     "מגרשי בנייה",
     "דונם"
   ],
-  "size_max_dunam": 0,
-  "sources": {
-    "facebook": true,
-    "alerts": true,
-    "yad2": true
-  },
-  "urgent_below": 450000,
-  "land_type": "all",
+  "feeds": [
+    "https://www.google.com/alerts/feeds/14392135715118895985/3241339541146226061",
+    "https://www.google.com/alerts/feeds/14392135715118895985/10017761115344872840",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3196392219277136674",
+    "https://www.google.com/alerts/feeds/14392135715118895985/7737247213064390223",
+    "https://www.google.com/alerts/feeds/14392135715118895985/1472786581246698656",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3213448284328784609",
+    "https://www.google.com/alerts/feeds/14392135715118895985/11572940610855681918",
+    "https://www.google.com/alerts/feeds/14392135715118895985/17854019015484452617",
+    "https://www.google.com/alerts/feeds/14392135715118895985/3817240065899836920"
+  ],
+  "max_messages_per_run": 25,
+  "_land_type_options": "all | build_only",
   "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
-  "max_price": 0
+  "size_max_dunam": 0,
+  "land_type": "all",
+  "max_price": 0,
+  "size_min_dunam": 0,
+  "keep_if_no_price": true,
+  "sources": {
+    "alerts": true,
+    "yad2": true,
+    "facebook": true
+  }
 }
