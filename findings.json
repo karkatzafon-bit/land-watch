@@ -1,5 +1,19 @@
 [
  {
+  "id": "36cb974558c626e1",
+  "ts": 1788641315,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏מדעי הטבע והחיים באו\"פ‏",
+  "link": "https://www.facebook.com/nd/?groups%2FOpenuSciences%2F&aref=1788635357403899&medium=email&mid=65ac0d5865829G5af41325b406G65ac11f1c5afbG91&bcode=2.1788635358.Ab0BDMcWyiWt6_acJbpCfD77zGo&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAMyKkv7If-vjDk5rvsWIxApioLS_-7pqQ3pZ4sEmcpWLw",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "0750923124203abe",
   "ts": 1788459081,
   "source": "yad2",
