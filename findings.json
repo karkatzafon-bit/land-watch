@@ -1,5 +1,19 @@
 [
  {
+  "id": "6a8487e6fd042091",
+  "ts": 1788881668,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏סובב כינרת - להשכרה: דירות, בתים, בתי קרקע, קוטג'ים בקיבוצים, במושבים ובכפר‏",
+  "link": "https://www.facebook.com/nd/?groups%2FSovevkineret%2F&aref=1788868748380028&medium=email&mid=65af72cb604aaG5af41325b406G65af7764c077cG91&bcode=2.1788868750.Ab1YvhSDIpQpw2TLkT6SVX7KtcY&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAMJtTLJyg_ZA8d0WdDUZXgKTbGy4EbzMJoFDUCSmVgucg",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": true,
+  "reason": ""
+ },
+ {
   "id": "69a74e870fbb2873",
   "ts": 1788812109,
   "source": "yad2",
