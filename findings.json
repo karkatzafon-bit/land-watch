@@ -1,5 +1,19 @@
 [
  {
+  "id": "6d01b4a884e5eb17",
+  "ts": 1789041380,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏‎Nitai‎‏ הצטרפת לקבוצה ‏לעבור לגור בקיבוץ‏",
+  "link": "https://www.facebook.com/nd/?groups%2F1813299332295367%2F&aref=1789029850136849&medium=email&mid=65b1caf1fbe3fG5af41325b406G65b1cf8b5c111G91&bcode=2.1789029851.Ab3ZuBRZBBFpg4Dup0QhUilloP0&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAPSjqOsqVGO9bsGhC8w2HCfnpMLs8Dmt0IGRrOJ_6rI_w",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "a7a98e796dd9b217",
   "ts": 1788977217,
   "source": "yad2",
