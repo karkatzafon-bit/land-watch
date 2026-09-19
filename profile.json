@@ -22,9 +22,12 @@
     "מגרשי בנייה",
     "דונם"
   ],
-  "size_max_dunam": 0,
-  "max_messages_per_run": 25,
+  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר.",
+  "_land_type_options": "all | build_only",
+  "size_min_dunam": 0,
+  "land_type": "all",
   "keep_if_no_price": true,
+  "max_messages_per_run": 25,
   "areas": [
     "יסוד המעלה",
     "משמר הירדן",
@@ -43,15 +46,12 @@
     "כרמל",
     "חוף הכרמל"
   ],
-  "_land_type_options": "all | build_only",
-  "urgent_below": 450000,
-  "max_price": 0,
-  "land_type": "all",
-  "size_min_dunam": 0,
   "sources": {
     "facebook": true,
-    "alerts": true,
-    "yad2": true
+    "yad2": true,
+    "alerts": true
   },
-  "_comment": "מקור האמת לסינון. נערך מהאתר ומשפיע על הסקריפטים, הטלגרם והאתר."
+  "size_max_dunam": 0,
+  "urgent_below": 450000,
+  "max_price": 0
 }
