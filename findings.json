@@ -1,5 +1,19 @@
 [
  {
+  "id": "fcfc9bf1a40e32fb",
+  "ts": 1789941638,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏The fellowship of doctors to be רפואה 4 שנתי‏: \"‏איך הייתם ממליצים להתחיל...‏\"",
+  "link": "https://www.facebook.com/nd/?aref=1789932524977626&medium=email&mid=65beedabcbb08G5af41325b406G65bef2452bddaG2ac&bcode=2.1789932536.Ab0NHX6WKEkMGSeVSz9BoRPQ7MI&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAOzTm9XNZ-MF0dAoqKhHSXW8_24VBBiIKQG4GC_OOcCKQ&lloc=f_logo_in_email&rms=v2&irms=1&lfes=0",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "d3d090050eee79d6",
   "ts": 1789667349,
   "source": "yad2",
