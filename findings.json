@@ -1,5 +1,19 @@
 [
  {
+  "id": "ddc2950222deea32",
+  "ts": 1790125254,
+  "source": "web",
+  "kind": "listing",
+  "title": "מרכז קניות ובילוי חדש: בין שכונת גליל ים לרובע העשירי ברמה\"ש - שרון אונליין",
+  "link": "https://sharonline.co.il/businesses-and-shops/%D7%9E%D7%AA%D7%97%D7%9D-%D7%9E%D7%A1%D7%97%D7%A8-%D7%92%D7%9C%D7%99%D7%9C-%D7%99%D7%9D/",
+  "price": 17000.0,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": true,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "fcfc9bf1a40e32fb",
   "ts": 1789941638,
   "source": "facebook",
