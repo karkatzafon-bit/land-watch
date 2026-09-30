@@ -1,5 +1,19 @@
 [
  {
+  "id": "c687ad3845f76d3d",
+  "ts": 1790729423,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏מועמדים לתוכניות לימודי רפואה 4 שנתית‏: \"‏למי שמתעניין/ת ברפואת...‏\"",
+  "link": "https://www.facebook.com/nd/?aref=1790716656264021&medium=email&mid=65ca56c9aa083G5af41325b406G65ca5b630a355G2ac&bcode=2.1790716669.Ab0c0WyIXVEjhF1XwR6ThRLK7Mo&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAPW7wjmLIK2yFtE3RlJUCMNuXoKK9Q2alygg20FGJb9Lw&lloc=f_logo_in_email&rms=v2&irms=1&lfes=0",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "45147cf246bc8d70",
   "ts": 1790716055,
   "source": "yad2",
