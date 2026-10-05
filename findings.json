@@ -1,5 +1,19 @@
 [
  {
+  "id": "530a43a94081760e",
+  "ts": 1791217919,
+  "source": "web",
+  "kind": "listing",
+  "title": "הצינור לירדן יגביל בנייה לאורך 50 ק\"מ בצפון - ובעלי הקרקעות כבר צריכים לקחת אותו בחשבון - ביזפורטל",
+  "link": "https://www.bizportal.co.il/realestates/news/article/20044041",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
   "id": "c38ce39075fcec61",
   "ts": 1791138376,
   "source": "yad2",
