@@ -1,5 +1,19 @@
 [
  {
+  "id": "2b9997ab5c43f069",
+  "ts": 1791787336,
+  "source": "web",
+  "kind": "listing",
+  "title": "חשד: פועל שנפצע קשה באתר בנייה ביראון הותקף בידי אחיו - החשוד אותר מסתתר בשיח ליד  הכנרת",
+  "link": "https://hkn.co.il/archives/212797",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "c4add9e29ee9746a",
   "ts": 1791573137,
   "source": "yad2",
