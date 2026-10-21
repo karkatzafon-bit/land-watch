@@ -1,5 +1,19 @@
 [
  {
+  "id": "e43aaa8093428a2e",
+  "ts": 1792586105,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "קיבלת הודעה מ: ‏‎Shira Ben Haim‎‏",
+  "link": "https://www.facebook.com/messenger/email/?recipient_fbid=100004339758086&sender_fbid=100000095852651&thread_fbid=2282815025840419&is_group_thread=0&source=msg&notif_id=1792580814410643&cta_type=view_message_body&is_fbm_redirect=0&is_e2ee_thread=1",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "לא רלוונטי לאזור"
+ },
+ {
   "id": "cdd42ee99a745e20",
   "ts": 1792525335,
   "source": "yad2",
