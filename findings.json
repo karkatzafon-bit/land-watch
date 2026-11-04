@@ -1,5 +1,19 @@
 [
  {
+  "id": "6cbc1817302a7021",
+  "ts": 1793818782,
+  "source": "rmi",
+  "kind": "listing",
+  "title": "אושרה להפקדה תוכנית משרד הבינוי והשיכון מחוז חיפה ועיריית עכו, להקמת שכונת החוף הצפוני בעכו",
+  "link": "https://www.gov.il/he/pages/spokesman-04112026",
+  "price": null,
+  "size_dunam": 564.0,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
   "id": "e263236b71eb48cc",
   "ts": 1793653143,
   "source": "facebook",
