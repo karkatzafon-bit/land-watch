@@ -1,5 +1,33 @@
 [
  {
+  "id": "e9d9614e1dba7393",
+  "ts": 1794438720,
+  "source": "facebook",
+  "kind": "fb_post",
+  "title": "‏בתים במושבים ובקיבוצים בגליל המערבי‏: ‏‏חזר להיות אקטואלי -...‏",
+  "link": "https://www.facebook.com/nd/?groups%2Fmoshavim%2Fpermalink%2F4735333996787556%2F&aref=1794426603229061&medium=email&mid=6600536acccb3G5af41325b406G660058042cf85G96&bcode=2.1794426609.Ab1kESK8Lj9DCDxmxggptitn_vg&n_m=karka.tzafon%40gmail.com&n_sg=Q6bPBAPbEfzNZEqnImpE7pXiXbQj6XBHeykEnjrSs3M3qR0Mww&lloc=f_logo_in_email&rms=v2&irms=1&lfes=0",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": true,
+  "reason": ""
+ },
+ {
+  "id": "e63269119f7dcf5d",
+  "ts": 1794438717,
+  "source": "web",
+  "kind": "listing",
+  "title": "עוצמת הרעש – 4.5: רעידת אדמה הורגשה באילת ובערבה | חדשות 13 - רשת 13",
+  "link": "https://13tv.co.il/item/news/domestic/internal/eilat-2-905454681/",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "af29d5eea0fa20af",
   "ts": 1794415446,
   "source": "web",
