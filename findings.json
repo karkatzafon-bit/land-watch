@@ -1,5 +1,19 @@
 [
  {
+  "id": "af29d5eea0fa20af",
+  "ts": 1794415446,
+  "source": "web",
+  "kind": "listing",
+  "title": "סוף לממלכת \"ישר-אל\": פונה השטח של \"המדינה\" שהשתלטה על שטחים  בגליל  - i24NEWS",
+  "link": "https://www.i24news.tv/he/news/news/local/artc-4def4947",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "6cbc1817302a7021",
   "ts": 1793818782,
   "source": "rmi",
