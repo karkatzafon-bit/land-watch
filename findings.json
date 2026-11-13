@@ -1,5 +1,19 @@
 [
  {
+  "id": "a6dcb7bf9b061515",
+  "ts": 1794536047,
+  "source": "web",
+  "kind": "listing",
+  "title": "בית צמוד קרקע בהון עצמי נמוך ועם פוטנציאל רווח של מאות אלפי שקלים - כיכר השבת",
+  "link": "https://www.kikar.co.il/haredim-news/toebc0",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
   "id": "e9d9614e1dba7393",
   "ts": 1794438720,
   "source": "facebook",
