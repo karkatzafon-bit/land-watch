@@ -1,5 +1,47 @@
 [
  {
+  "id": "ef62898482ed3a4e",
+  "ts": 1794885412,
+  "source": "web",
+  "kind": "listing",
+  "title": "מלונות, בתי קפה וחנויות: המתחם החדש שמתוכנן ליד האגם בצפון | מעריב",
+  "link": "https://www.maariv.co.il/economy/realestate/article-1388901",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
+  "id": "4bd94fbccafe9fe3",
+  "ts": 1794885412,
+  "source": "web",
+  "kind": "listing",
+  "title": "רמ\"י דורשת: לשווק למילואימניקים קרקע חקלאית של מושב בשרון - מקור ראשון",
+  "link": "https://www.makorrishon.co.il/news/law/article/393253",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "agri",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
+  "id": "0ddee5818c437a61",
+  "ts": 1794885412,
+  "source": "web",
+  "kind": "listing",
+  "title": "פיתוח מלונאי בצפון: פורסם מכרז לבניית 72 חדרי מלון באגם מונפורט | מגדילים",
+  "link": "https://magdilim.co.il/161120260924/",
+  "price": 7500000.0,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "מחוץ לאזורים"
+ },
+ {
   "id": "9deb483f124a5379",
   "ts": 1794780882,
   "source": "web",
