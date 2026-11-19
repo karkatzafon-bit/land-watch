@@ -1,5 +1,19 @@
 [
  {
+  "id": "4411602fb2206d6c",
+  "ts": 1795085498,
+  "source": "web",
+  "kind": "listing",
+  "title": "בסיורים בגדה המערבית חיילים לומדים ליהנות באתרים שפלסטינים גורשו מהם - פני הארץ",
+  "link": "https://www.haaretz.co.il/opinions/zafrir/2026-11-18/ty-article-opinion/.premium/000001a1-ee81-d6a1-aba5-ee81b9f60000",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "df5cb0664f1557a3",
   "ts": 1795035460,
   "source": "yad2",
