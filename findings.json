@@ -1,5 +1,19 @@
 [
  {
+  "id": "e2807dcefc3e58df",
+  "ts": 1795166448,
+  "source": "web",
+  "kind": "listing",
+  "title": "פועל בן 55 נפצע בינוני מנפילה מגובה באתר בנייה  בגליל העליון",
+  "link": "https://www.israelhayom.co.il/israelnow/article/21888529",
+  "price": null,
+  "size_dunam": null,
+  "land_type": "unknown",
+  "urgent": false,
+  "passed": false,
+  "reason": "ללא מילת מפתח"
+ },
+ {
   "id": "4411602fb2206d6c",
   "ts": 1795085498,
   "source": "web",
